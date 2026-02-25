@@ -5,8 +5,8 @@ import { GestionProvider } from '@/lib/gestion-context'
 import { AppNav } from '@/components/app-nav'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   title: 'Sistema de Gestion Clinica',
@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="font-sans antialiased">
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <GestionProvider>
           <AppNav />
           <div className="min-h-[calc(100vh-3.5rem)]">
