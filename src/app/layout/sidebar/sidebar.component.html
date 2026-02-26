@@ -1,0 +1,377 @@
+@if (isVisible) {
+  <!-- Mobile backdrop -->
+  @if (sidebar.isMobile() && sidebar.mobileOpen()) {
+    <div
+      class="fixed inset-0 z-40 bg-foreground/40"
+      (click)="sidebar.closeMobile()"
+    ></div>
+  }
+
+  <!-- Sidebar wrapper -->
+  <div
+    [class]="
+      sidebar.isMobile()
+        ? 'fixed inset-y-0 left-0 z-50'
+        : 'relative shrink-0'
+    "
+  >
+    <aside
+      class="flex h-full flex-col bg-sidebar transition-all duration-300"
+      [class.w-[280px]]="sidebar.isMobile()"
+      [class.w-[68px]]="showCollapsed && !sidebar.isMobile()"
+      [class.w-[270px]]="!showCollapsed && !sidebar.isMobile()"
+    >
+      <!-- Header -->
+      <div
+        class="flex h-14 shrink-0 items-center justify-between border-b border-sidebar-border px-4"
+      >
+        @if (!showCollapsed) {
+          <a
+            routerLink="/dashboard"
+            class="flex items-center gap-2.5"
+            (click)="handleLinkClick()"
+          >
+            <div
+              class="flex h-7 w-7 items-center justify-center rounded-lg bg-sidebar-primary"
+            >
+              <lucide-icon
+                name="layout-grid"
+                [size]="14"
+                class="text-sidebar-primary-foreground"
+              ></lucide-icon>
+            </div>
+            <span class="text-sm font-semibold text-sidebar-foreground">
+              AdminPanel
+            </span>
+          </a>
+        }
+
+        @if (sidebar.isMobile()) {
+          <button
+            (click)="sidebar.closeMobile()"
+            class="flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            aria-label="Cerrar menu"
+          >
+            <lucide-icon name="x" [size]="16"></lucide-icon>
+          </button>
+        } @else {
+          <button
+            (click)="sidebar.toggleCollapsed()"
+            class="flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            [class.mx-auto]="showCollapsed"
+            [attr.aria-label]="
+              sidebar.collapsed() ? 'Expandir menu' : 'Colapsar menu'
+            "
+          >
+            @if (sidebar.collapsed()) {
+              <lucide-icon name="panel-left-open" [size]="16"></lucide-icon>
+            } @else {
+              <lucide-icon name="panel-left-close" [size]="16"></lucide-icon>
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Clinic Selector -->
+      @if (!showCollapsed) {
+        <div class="shrink-0 border-b border-sidebar-border px-3 py-2.5">
+          <app-popover
+            side="right"
+            align="start"
+            contentClass="w-[240px]"
+          >
+            <button
+              trigger
+              class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-sidebar-accent"
+            >
+              <div
+                class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sidebar-primary/20 text-sidebar-primary"
+              >
+                <lucide-icon name="building-2" [size]="14"></lucide-icon>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p
+                  class="truncate text-xs font-medium text-sidebar-foreground"
+                >
+                  {{ clinic.currentClinic().name }}
+                </p>
+                <p class="truncate text-[10px] text-sidebar-foreground/50">
+                  {{ clinic.currentClinic().address }}
+                </p>
+              </div>
+              <lucide-icon
+                name="chevrons-up-down"
+                [size]="14"
+                class="shrink-0 text-sidebar-foreground/40"
+              ></lucide-icon>
+            </button>
+
+            <!-- Popover content -->
+            <p
+              class="px-2 pb-1.5 pt-1 text-xs font-medium text-muted-foreground"
+            >
+              Seleccionar clinica
+            </p>
+            @for (c of clinic.allClinics; track c.id) {
+              <button
+                class="flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-secondary"
+                [class.bg-secondary]="clinic.currentClinic().id === c.id"
+                (click)="selectClinic(c)"
+              >
+                <lucide-icon
+                  name="building-2"
+                  [size]="14"
+                  class="shrink-0 text-muted-foreground"
+                ></lucide-icon>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-xs font-medium text-foreground">
+                    {{ c.name }}
+                  </p>
+                  <p class="truncate text-[10px] text-muted-foreground">
+                    {{ c.address }}
+                  </p>
+                </div>
+                @if (clinic.currentClinic().id === c.id) {
+                  <lucide-icon
+                    name="check"
+                    [size]="14"
+                    class="shrink-0 text-primary"
+                  ></lucide-icon>
+                }
+              </button>
+            }
+          </app-popover>
+        </div>
+      } @else {
+        <div class="shrink-0 border-b border-sidebar-border px-2 py-2.5">
+          <div
+            class="flex h-8 w-full items-center justify-center rounded-md bg-sidebar-primary/20 text-sidebar-primary"
+            [appTooltip]="clinic.currentClinic().name"
+            tooltipSide="right"
+          >
+            <lucide-icon name="building-2" [size]="16"></lucide-icon>
+          </div>
+        </div>
+      }
+
+      <!-- Navigation -->
+      <nav class="sidebar-scroll flex-1 overflow-y-auto px-2 py-2">
+        <div class="flex flex-col gap-0.5">
+          @for (item of navigationItems; track item.label) {
+            @if (item.type === 'link') {
+              <!-- Link item -->
+              @if (showCollapsed) {
+                <a
+                  [routerLink]="item.href"
+                  (click)="handleLinkClick()"
+                  class="flex items-center justify-center rounded-lg py-2 text-[13px] font-medium transition-colors"
+                  [class.bg-sidebar-primary]="isActive(item.href)"
+                  [class.text-sidebar-primary-foreground]="isActive(item.href)"
+                  [class.text-sidebar-foreground/70]="!isActive(item.href)"
+                  [class.hover:bg-sidebar-accent]="!isActive(item.href)"
+                  [class.hover:text-sidebar-foreground]="!isActive(item.href)"
+                  [appTooltip]="item.label"
+                  tooltipSide="right"
+                >
+                  <lucide-icon
+                    [name]="item.icon"
+                    [size]="17"
+                    class="shrink-0"
+                  ></lucide-icon>
+                </a>
+              } @else {
+                <a
+                  [routerLink]="item.href"
+                  (click)="handleLinkClick()"
+                  class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+                  [class.bg-sidebar-primary]="isActive(item.href)"
+                  [class.text-sidebar-primary-foreground]="isActive(item.href)"
+                  [class.text-sidebar-foreground/70]="!isActive(item.href)"
+                  [class.hover:bg-sidebar-accent]="!isActive(item.href)"
+                  [class.hover:text-sidebar-foreground]="!isActive(item.href)"
+                >
+                  <lucide-icon
+                    [name]="item.icon"
+                    [size]="17"
+                    class="shrink-0"
+                  ></lucide-icon>
+                  <span>{{ item.label }}</span>
+                </a>
+              }
+            } @else {
+              <!-- Module item -->
+              @if (showCollapsed) {
+                <button
+                  (click)="onCollapsedModuleClick(asModule(item))"
+                  class="flex w-full items-center justify-center rounded-lg py-2 text-[13px] font-medium transition-colors"
+                  [class.bg-sidebar-primary/20]="isModuleActive(asModule(item))"
+                  [class.text-sidebar-primary]="isModuleActive(asModule(item))"
+                  [class.text-sidebar-foreground/70]="
+                    !isModuleActive(asModule(item))
+                  "
+                  [class.hover:bg-sidebar-accent]="
+                    !isModuleActive(asModule(item))
+                  "
+                  [class.hover:text-sidebar-foreground]="
+                    !isModuleActive(asModule(item))
+                  "
+                  [appTooltip]="item.label"
+                  tooltipSide="right"
+                >
+                  <lucide-icon
+                    [name]="item.icon"
+                    [size]="17"
+                    class="shrink-0"
+                  ></lucide-icon>
+                </button>
+              } @else {
+                <div>
+                  <button
+                    (click)="toggleModule(item.label)"
+                    class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors"
+                    [class.bg-sidebar-primary/20]="
+                      isModuleActive(asModule(item))
+                    "
+                    [class.text-sidebar-primary]="
+                      isModuleActive(asModule(item))
+                    "
+                    [class.text-sidebar-foreground/70]="
+                      !isModuleActive(asModule(item))
+                    "
+                    [class.hover:bg-sidebar-accent]="
+                      !isModuleActive(asModule(item))
+                    "
+                    [class.hover:text-sidebar-foreground]="
+                      !isModuleActive(asModule(item))
+                    "
+                  >
+                    <lucide-icon
+                      [name]="item.icon"
+                      [size]="17"
+                      class="shrink-0"
+                    ></lucide-icon>
+                    <span class="flex-1 text-left">{{ item.label }}</span>
+                    @if (isModuleOpen(item.label)) {
+                      <lucide-icon
+                        name="chevron-down"
+                        [size]="14"
+                      ></lucide-icon>
+                    } @else {
+                      <lucide-icon
+                        name="chevron-right"
+                        [size]="14"
+                      ></lucide-icon>
+                    }
+                  </button>
+
+                  @if (isModuleOpen(item.label)) {
+                    <div
+                      class="ml-3 mt-0.5 border-l border-sidebar-border pl-2.5"
+                    >
+                      @for (
+                        sub of asModule(item).submodules;
+                        track sub.label
+                      ) {
+                        <div class="mb-0.5">
+                          <button
+                            (click)="
+                              toggleSubmodule(item.label + '::' + sub.label)
+                            "
+                            class="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors"
+                            [class.text-sidebar-primary]="
+                              isSubmoduleActive(item.label, sub.label)
+                            "
+                            [class.text-sidebar-foreground/55]="
+                              !isSubmoduleActive(item.label, sub.label)
+                            "
+                            [class.hover:text-sidebar-foreground/80]="
+                              !isSubmoduleActive(item.label, sub.label)
+                            "
+                          >
+                            <span class="flex-1 text-left">{{
+                              sub.label
+                            }}</span>
+                            @if (
+                              isSubmoduleOpen(item.label + '::' + sub.label)
+                            ) {
+                              <lucide-icon
+                                name="chevron-down"
+                                [size]="12"
+                              ></lucide-icon>
+                            } @else {
+                              <lucide-icon
+                                name="chevron-right"
+                                [size]="12"
+                              ></lucide-icon>
+                            }
+                          </button>
+
+                          @if (
+                            isSubmoduleOpen(item.label + '::' + sub.label)
+                          ) {
+                            <div
+                              class="ml-2 border-l border-sidebar-border/60 pl-2"
+                            >
+                              @for (route of sub.routes; track route.href) {
+                                <a
+                                  [routerLink]="route.href"
+                                  (click)="handleLinkClick()"
+                                  class="block rounded-md px-2.5 py-1.5 text-[12px] transition-colors"
+                                  [class.bg-sidebar-primary]="
+                                    isActive(route.href)
+                                  "
+                                  [class.text-sidebar-primary-foreground]="
+                                    isActive(route.href)
+                                  "
+                                  [class.font-medium]="isActive(route.href)"
+                                  [class.text-sidebar-foreground/50]="
+                                    !isActive(route.href)
+                                  "
+                                  [class.hover:bg-sidebar-accent]="
+                                    !isActive(route.href)
+                                  "
+                                  [class.hover:text-sidebar-foreground/80]="
+                                    !isActive(route.href)
+                                  "
+                                >
+                                  {{ route.label }}
+                                </a>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            }
+          }
+        </div>
+      </nav>
+
+      <!-- Footer -->
+      @if (!showCollapsed) {
+        <div class="shrink-0 border-t border-sidebar-border px-4 py-3">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-[10px] font-bold text-sidebar-primary-foreground"
+            >
+              A
+            </div>
+            <div class="flex min-w-0 flex-col">
+              <span
+                class="truncate text-xs font-medium text-sidebar-foreground"
+              >
+                Admin User
+              </span>
+              <span class="truncate text-[10px] text-sidebar-foreground/50">
+                admin&#64;panel.com
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+    </aside>
+  </div>
+}

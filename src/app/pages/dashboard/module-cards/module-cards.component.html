@@ -1,0 +1,110 @@
+<div class="flex flex-col gap-8">
+  <!-- Modules -->
+  <section>
+    <h2 class="mb-4 text-base font-semibold text-foreground">Modulos</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (item of modules; track item.label) {
+        <app-card
+          class="group relative overflow-hidden border-border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+        >
+          <app-card-header class="flex flex-row items-start justify-between pb-3">
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+              >
+                <lucide-icon [name]="item.icon" [size]="20"></lucide-icon>
+              </div>
+              <div>
+                <app-card-title class="text-sm font-semibold text-card-foreground">
+                  {{ item.label }}
+                </app-card-title>
+                <app-badge variant="secondary" class="mt-1 text-[10px] font-normal">
+                  {{ getTotalRoutes(item) }}
+                  {{ getTotalRoutes(item) === 1 ? 'ruta' : 'rutas' }}
+                </app-badge>
+              </div>
+            </div>
+            <a
+              [routerLink]="getFirstRoute(item)"
+              class="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+              [attr.aria-label]="'Ir a ' + item.label"
+            >
+              <lucide-icon name="arrow-right" [size]="16"></lucide-icon>
+            </a>
+          </app-card-header>
+          <app-card-content class="pt-0">
+            @if (item.description) {
+              <p class="mb-3 text-xs leading-relaxed text-muted-foreground">
+                {{ item.description }}
+              </p>
+            }
+            <div class="flex flex-col gap-2">
+              @for (sub of item.submodules; track sub.label) {
+                <div>
+                  <p
+                    class="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
+                  >
+                    {{ sub.label }}
+                  </p>
+                  <div class="flex flex-col gap-0.5">
+                    @for (route of sub.routes; track route.href) {
+                      <a
+                        [routerLink]="route.href"
+                        class="flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      >
+                        <span>{{ route.label }}</span>
+                        <lucide-icon
+                          name="chevron-right"
+                          [size]="12"
+                        ></lucide-icon>
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </app-card-content>
+        </app-card>
+      }
+    </div>
+  </section>
+
+  <!-- Links -->
+  <section>
+    <h2 class="mb-4 text-base font-semibold text-foreground">Enlaces</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (item of links; track item.label) {
+        <a [routerLink]="item.href" class="block">
+          <app-card
+            class="group h-full border-border bg-card transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
+          >
+            <app-card-header class="flex flex-row items-center gap-3 pb-2">
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+              >
+                <lucide-icon [name]="item.icon" [size]="20"></lucide-icon>
+              </div>
+              <div class="flex-1">
+                <app-card-title class="text-sm font-semibold text-card-foreground">
+                  {{ item.label }}
+                </app-card-title>
+              </div>
+              <lucide-icon
+                name="arrow-right"
+                [size]="16"
+                class="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+              ></lucide-icon>
+            </app-card-header>
+            @if (item.description) {
+              <app-card-content class="pt-0">
+                <p class="text-xs leading-relaxed text-muted-foreground">
+                  {{ item.description }}
+                </p>
+              </app-card-content>
+            }
+          </app-card>
+        </a>
+      }
+    </div>
+  </section>
+</div>

@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafb;
+  --foreground: #0f1729;
+  --card: #ffffff;
+  --card-foreground: #0f1729;
+  --popover: #ffffff;
+  --popover-foreground: #0f1729;
+  --primary: #0aa1ae;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f7f8;
+  --secondary-foreground: #0f1729;
+  --muted: #f0f4f5;
+  --muted-foreground: #5f6b7a;
+  --accent: #e6f6f7;
+  --accent-foreground: #087d87;
+  --destructive: #e5393b;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0aa1ae;
+  --radius: 0.625rem;
+  --sidebar: #0f1729;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #0aa1ae;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a2540;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #1e2d4a;
+  --sidebar-ring: #0aa1ae;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline-color: rgba(10, 161, 174, 0.5);
+  }
+
+  html,
+  body {
+    @apply bg-background text-foreground;
+    overflow: hidden;
+    height: 100dvh;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* Sidebar custom scrollbar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(10, 161, 174, 0.25) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(10, 161, 174, 0.25);
+  border-radius: 9999px;
+}
+
+/* Tooltip animation */
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

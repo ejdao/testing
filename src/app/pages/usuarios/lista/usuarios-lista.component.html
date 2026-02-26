@@ -1,0 +1,231 @@
+<div class="flex flex-col gap-6">
+  <!-- Header -->
+  <div
+    class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div>
+      <span
+        class="text-xs font-medium uppercase tracking-wider text-primary"
+      >
+        Usuarios / Gestion
+      </span>
+      <h1 class="text-2xl font-bold text-foreground">Lista de Usuarios</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Administra y gestiona los usuarios del sistema.
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+      >
+        <lucide-icon name="download" [size]="16"></lucide-icon>
+        Exportar
+      </button>
+      <button
+        class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        <lucide-icon name="user-plus" [size]="16"></lucide-icon>
+        Nuevo Usuario
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Mini -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <app-card class="border-border">
+      <app-card-content class="p-4">
+        <p class="text-xs text-muted-foreground">Total Usuarios</p>
+        <p class="text-2xl font-bold text-foreground">
+          {{ usersData.length }}
+        </p>
+      </app-card-content>
+    </app-card>
+    <app-card class="border-border">
+      <app-card-content class="p-4">
+        <p class="text-xs text-muted-foreground">Activos</p>
+        <p class="text-2xl font-bold text-emerald-600">{{ activeCount }}</p>
+      </app-card-content>
+    </app-card>
+    <app-card class="border-border">
+      <app-card-content class="p-4">
+        <p class="text-xs text-muted-foreground">Inactivos</p>
+        <p class="text-2xl font-bold text-muted-foreground">
+          {{ inactiveCount }}
+        </p>
+      </app-card-content>
+    </app-card>
+    <app-card class="border-border">
+      <app-card-content class="p-4">
+        <p class="text-xs text-muted-foreground">Administradores</p>
+        <p class="text-2xl font-bold text-primary">{{ adminCount }}</p>
+      </app-card-content>
+    </app-card>
+  </div>
+
+  <!-- Table Card -->
+  <app-card class="border-border">
+    <app-card-header class="pb-4">
+      <div
+        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <app-card-title class="text-base">Usuarios</app-card-title>
+          <app-card-description class="text-xs">
+            {{ filtered.length }} de {{ usersData.length }} usuarios
+          </app-card-description>
+        </div>
+        <div class="flex gap-2">
+          <div class="relative">
+            <lucide-icon
+              name="search"
+              [size]="16"
+              class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            ></lucide-icon>
+            <input
+              type="text"
+              placeholder="Buscar usuarios..."
+              [(ngModel)]="searchQuery"
+              class="h-9 w-[240px] rounded-md border border-input bg-secondary pl-9 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            />
+          </div>
+          <button
+            class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <lucide-icon name="filter" [size]="14"></lucide-icon>
+            Filtrar
+          </button>
+        </div>
+      </div>
+    </app-card-header>
+    <app-card-content class="p-0">
+      <div class="w-full overflow-auto">
+        <table class="w-full caption-bottom text-sm">
+          <thead class="border-b border-border">
+            <tr>
+              <th
+                class="h-12 px-4 pl-6 text-left align-middle text-xs font-medium text-muted-foreground"
+              >
+                Usuario
+              </th>
+              <th
+                class="h-12 px-4 text-left align-middle text-xs font-medium text-muted-foreground"
+              >
+                Rol
+              </th>
+              <th
+                class="h-12 px-4 text-left align-middle text-xs font-medium text-muted-foreground"
+              >
+                Estado
+              </th>
+              <th
+                class="h-12 px-4 text-left align-middle text-xs font-medium text-muted-foreground"
+              >
+                Ultimo Acceso
+              </th>
+              <th class="h-12 w-[50px] px-4"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of filtered; track user.id) {
+              <tr
+                class="group border-b border-border transition-colors hover:bg-muted/50"
+              >
+                <td class="p-4 pl-6">
+                  <div class="flex items-center gap-3">
+                    <app-avatar class="h-8 w-8">
+                      <app-avatar-fallback
+                        class="bg-primary/10 text-xs font-medium text-primary"
+                      >
+                        {{ getInitials(user.name) }}
+                      </app-avatar-fallback>
+                    </app-avatar>
+                    <div>
+                      <p class="text-sm font-medium text-foreground">
+                        {{ user.name }}
+                      </p>
+                      <p class="text-xs text-muted-foreground">
+                        {{ user.email }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4">
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    [class]="getRoleColor(user.role)"
+                  >
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="p-4">
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    [class]="getStatusColor(user.status)"
+                  >
+                    {{ user.status }}
+                  </span>
+                </td>
+                <td class="p-4 text-xs text-muted-foreground">
+                  {{ user.lastLogin }}
+                </td>
+                <td class="p-4">
+                  <app-dropdown-menu align="end">
+                    <button
+                      trigger
+                      class="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-secondary group-hover:opacity-100"
+                    >
+                      <lucide-icon
+                        name="more-horizontal"
+                        [size]="16"
+                      ></lucide-icon>
+                      <span class="sr-only">Acciones</span>
+                    </button>
+                    <app-dropdown-menu-item>Ver Perfil</app-dropdown-menu-item>
+                    <app-dropdown-menu-item>Editar</app-dropdown-menu-item>
+                    <app-dropdown-menu-item class="text-destructive">
+                      Eliminar
+                    </app-dropdown-menu-item>
+                  </app-dropdown-menu>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div
+        class="flex items-center justify-between border-t border-border px-6 py-3"
+      >
+        <p class="text-xs text-muted-foreground">
+          Mostrando {{ filtered.length }} de {{ usersData.length }} resultados
+        </p>
+        <div class="flex items-center gap-1">
+          <button
+            disabled
+            class="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-foreground opacity-50"
+          >
+            <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+            <span class="sr-only">Anterior</span>
+          </button>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground"
+          >
+            1
+          </button>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-foreground transition-colors hover:bg-accent"
+          >
+            2
+          </button>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-md border border-input bg-background text-foreground transition-colors hover:bg-accent"
+          >
+            <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+            <span class="sr-only">Siguiente</span>
+          </button>
+        </div>
+      </div>
+    </app-card-content>
+  </app-card>
+</div>

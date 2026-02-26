@@ -1,0 +1,124 @@
+<header
+  class="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-4 lg:px-6"
+>
+  <!-- Left side -->
+  <div class="flex items-center gap-3">
+    @if (sidebar.isMobile()) {
+      <button
+        (click)="sidebar.openMobile()"
+        class="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        aria-label="Abrir menu"
+      >
+        <lucide-icon name="menu" [size]="20"></lucide-icon>
+      </button>
+    }
+
+    <!-- Breadcrumb -->
+    <nav
+      class="hidden items-center gap-1 text-sm sm:flex"
+      aria-label="Breadcrumb"
+    >
+      @for (crumb of breadcrumbs; track crumb.href; let i = $index; let last = $last) {
+        <span class="flex items-center gap-1">
+          @if (i > 0) {
+            <lucide-icon
+              name="chevron-right"
+              [size]="12"
+              class="text-muted-foreground"
+            ></lucide-icon>
+          }
+          @if (last) {
+            <span class="text-xs font-medium text-foreground">
+              {{ crumb.label }}
+            </span>
+          } @else {
+            <a
+              [routerLink]="crumb.href"
+              class="text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {{ crumb.label }}
+            </a>
+          }
+        </span>
+      }
+    </nav>
+  </div>
+
+  <!-- Right side -->
+  <div class="flex items-center gap-3">
+    <!-- Clinic indicator -->
+    <div
+      class="hidden items-center gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-1.5 md:flex"
+    >
+      <lucide-icon
+        name="building-2"
+        [size]="14"
+        class="text-primary"
+      ></lucide-icon>
+      <span class="text-xs font-medium text-foreground">
+        {{ clinic.currentClinic().name }}
+      </span>
+    </div>
+
+    <!-- Search -->
+    <div class="relative hidden lg:block">
+      <lucide-icon
+        name="search"
+        [size]="14"
+        class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+      ></lucide-icon>
+      <input
+        type="text"
+        placeholder="Buscar..."
+        class="h-8 w-[200px] rounded-md border border-input bg-secondary pl-9 pr-3 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+      />
+    </div>
+
+    <!-- Notifications -->
+    <button
+      class="relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+    >
+      <lucide-icon name="bell" [size]="16"></lucide-icon>
+      <span
+        class="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground"
+      >
+        3
+      </span>
+      <span class="sr-only">Notificaciones</span>
+    </button>
+
+    <!-- User dropdown -->
+    <app-dropdown-menu align="end">
+      <button
+        trigger
+        class="flex items-center gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-secondary"
+      >
+        <app-avatar class="h-7 w-7">
+          <app-avatar-fallback
+            class="bg-primary text-[10px] font-semibold text-primary-foreground"
+          >
+            AU
+          </app-avatar-fallback>
+        </app-avatar>
+        <span
+          class="hidden text-xs font-medium text-foreground lg:block"
+        >
+          Admin Usuario
+        </span>
+      </button>
+
+      <div class="px-2 py-1.5">
+        <p class="text-sm font-medium text-foreground">Admin Usuario</p>
+        <p class="text-xs text-muted-foreground">admin&#64;panel.com</p>
+      </div>
+      <app-dropdown-menu-separator />
+      <app-dropdown-menu-item
+        class="text-destructive"
+        (itemClick)="onLogout()"
+      >
+        <lucide-icon name="log-out" [size]="16" class="mr-2"></lucide-icon>
+        Cerrar sesion
+      </app-dropdown-menu-item>
+    </app-dropdown-menu>
+  </div>
+</header>
