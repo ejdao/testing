@@ -1,10 +1,19 @@
-# v0 runtime files
-__v0_runtime_loader.js
-__v0_devtools.tsx
-__v0_jsx-dev-runtime.ts
-
-# Common ignores
+# Dependencies
 node_modules/
-.next/
+
+# Build output
+dist/
+.angular/
+
+# Environment
 .env*.local
+
+# IDE
 .DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Angular cache
+.angular/cache
