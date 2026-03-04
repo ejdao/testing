@@ -1,7 +1,36 @@
-import { Sidebar } from "@/components/sidebar"
-import { TopHeader } from "@/components/top-header"
-import { SidebarProvider } from "@/lib/sidebar-context"
-import { ClinicProvider } from "@/lib/clinic-context"
+"use client"
+
+import { useAuth } from "@/lib/store"
+import { AppProviders } from "@/lib/store"
+import { AppSidebar } from "@/components/shared/app-sidebar"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+
+function DashboardShell({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/")
+    }
+  }, [isAuthenticated, router])
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-sm text-muted-foreground">Redirigiendo al login...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-screen bg-background">
+      <AppSidebar />
+      <main className="flex-1 lg:ml-64">{children}</main>
+    </div>
+  )
+}
 
 export default function DashboardLayout({
   children,
@@ -9,18 +38,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <ClinicProvider>
-        <div className="flex h-dvh bg-background">
-          <Sidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <TopHeader />
-            <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-              {children}
-            </main>
-          </div>
-        </div>
-      </ClinicProvider>
-    </SidebarProvider>
+    <AppProviders>
+      <DashboardShell>{children}</DashboardShell>
+    </AppProviders>
   )
 }
