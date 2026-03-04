@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { AppProviders, useAuth, getMockUsuarios } from "@/lib/store"
+import { useAuth, getMockUsuarios } from "@/lib/store"
 import type { Rol } from "@/lib/types"
 import {
   Ambulance,
@@ -166,9 +166,5 @@ function LoginForm() {
 }
 
 export default function Page() {
-  return (
-    <AppProviders>
-      <LoginForm />
-    </AppProviders>
-  )
+  return <LoginForm />
 }

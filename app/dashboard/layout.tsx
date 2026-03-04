@@ -1,12 +1,15 @@
 "use client"
 
 import { useAuth } from "@/lib/store"
-import { AppProviders } from "@/lib/store"
 import { AppSidebar } from "@/components/shared/app-sidebar"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
-function DashboardShell({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
 
@@ -29,17 +32,5 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <main className="flex-1 lg:ml-64">{children}</main>
     </div>
-  )
-}
-
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <AppProviders>
-      <DashboardShell>{children}</DashboardShell>
-    </AppProviders>
   )
 }
