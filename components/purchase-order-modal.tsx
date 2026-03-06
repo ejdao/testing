@@ -39,7 +39,7 @@ const TIPO_PAGO_OPTIONS: { value: TipoPago; label: string; description: string }
 ]
 
 export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }: PurchaseOrderModalProps) {
-  const [consecutivo] = useState(() => generateConsecutivo())
+  const [consecutivo, setConsecutivo] = useState('')
   const [tipoPago, setTipoPago] = useState<TipoPago>('ANTICIPO')
   const [numeroCuotas, setNumeroCuotas] = useState(1)
   const [cuotas, setCuotas] = useState<CuotaPago[]>([])
@@ -100,13 +100,19 @@ export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }
   const validarFormulario = (): boolean => {
     const nuevosErrores: Record<string, string> = {}
     
-    if (totalPorcentaje !== 100) {
+    if (!consecutivo.trim()) {
+      nuevosErrores.consecutivo = 'El consecutivo de la orden de compra es requerido'
+    }
+    
+    if (requiresCuotas && totalPorcentaje !== 100) {
       nuevosErrores.porcentaje = `El total de porcentajes debe ser 100%. Actual: ${totalPorcentaje}%`
     }
 
     setErrors(nuevosErrores)
     return Object.keys(nuevosErrores).length === 0
   }
+  
+  const requiresCuotas = tipoPago === 'CREDITO' || tipoPago === 'CREDIANTICIPO'
 
   const handleSubmit = () => {
     if (!validarFormulario()) return
@@ -126,8 +132,6 @@ export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }
   }
 
   if (!request) return null
-
-  const requiresCuotas = tipoPago === 'CREDITO' || tipoPago === 'CREDIANTICIPO'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
@@ -165,13 +169,39 @@ export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }
 
         {/* Content */}
         <div className="px-6 py-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Total de la Orden */}
-          <div className="bg-muted/50 rounded-lg p-4 border border-border">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm text-muted-foreground">Total de la Orden</Label>
-                <p className="text-xl font-mono font-bold text-foreground">{formatCurrency(totalOrden)}</p>
-              </div>
+          {/* Consecutivo y Total */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Campo para ingresar el consecutivo */}
+            <div className="space-y-2">
+              <Label htmlFor="consecutivo" className="text-sm font-medium">
+                Consecutivo de Orden de Compra <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="consecutivo"
+                type="text"
+                placeholder="Ej: OC-2026-0001"
+                value={consecutivo}
+                onChange={(e) => setConsecutivo(e.target.value)}
+                className={cn(
+                  'font-mono',
+                  errors.consecutivo && 'border-destructive'
+                )}
+              />
+              {errors.consecutivo && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.consecutivo}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Ingrese el consecutivo generado en el sistema externo
+              </p>
+            </div>
+
+            {/* Total de la Orden */}
+            <div className="bg-muted/50 rounded-lg p-4 border border-border">
+              <Label className="text-sm text-muted-foreground">Total de la Orden</Label>
+              <p className="text-xl font-mono font-bold text-foreground">{formatCurrency(totalOrden)}</p>
             </div>
           </div>
 
@@ -368,7 +398,7 @@ export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={requiresCuotas && totalPorcentaje !== 100}
+            disabled={!consecutivo.trim() || (requiresCuotas && totalPorcentaje !== 100)}
             className="gap-2"
           >
             <FileText className="h-4 w-4" />
