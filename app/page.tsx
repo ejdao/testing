@@ -51,6 +51,7 @@ export default function PurchaseRequestsPage() {
   const [reviewRequest, setReviewRequest] = useState<PurchaseRequest | null>(null)
   const [comparisonRequest, setComparisonRequest] = useState<PurchaseRequest | null>(null)
   const [comparisonCotizaciones, setComparisonCotizaciones] = useState<CotizacionGuardada[]>([])
+  const [comparisonReadOnly, setComparisonReadOnly] = useState(false)
   const [approvalRequest, setApprovalRequest] = useState<PurchaseRequest | null>(null)
   const [approvalCotizaciones, setApprovalCotizaciones] = useState<CotizacionGuardada[]>([])
   const [approvalRecomendacion, setApprovalRecomendacion] = useState<RecomendacionCompra | null>(null)
@@ -167,11 +168,12 @@ export default function PurchaseRequestsPage() {
     setApprovalRecomendacion(null)
   }, [])
 
-  const handleViewComparisonFromApproval = useCallback(() => {
-    if (approvalRequest && approvalCotizaciones.length > 0) {
-      setComparisonCotizaciones(approvalCotizaciones)
-      setComparisonRequest(approvalRequest)
-    }
+const handleViewComparisonFromApproval = useCallback(() => {
+  if (approvalRequest && approvalCotizaciones.length > 0) {
+  setComparisonCotizaciones(approvalCotizaciones)
+  setComparisonRequest(approvalRequest)
+  setComparisonReadOnly(true)
+  }
   }, [approvalRequest, approvalCotizaciones])
 
   const formatDisplayDate = (dateStr: string) => {
@@ -337,9 +339,11 @@ export default function PurchaseRequestsPage() {
       <QuotationComparisonModal
         request={comparisonRequest}
         cotizaciones={comparisonCotizaciones}
+        readOnly={comparisonReadOnly}
         onClose={() => {
           setComparisonRequest(null)
           setComparisonCotizaciones([])
+          setComparisonReadOnly(false)
         }}
       />
 

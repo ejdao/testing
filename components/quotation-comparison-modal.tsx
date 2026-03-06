@@ -10,6 +10,7 @@ interface QuotationComparisonModalProps {
   request: PurchaseRequest | null
   cotizaciones: CotizacionGuardada[]
   onClose: () => void
+  readOnly?: boolean
 }
 
 interface SeleccionProducto {
@@ -54,7 +55,7 @@ function getFileIcon(tipo: 'pdf' | 'image' | 'word' | 'excel') {
   }
 }
 
-export function QuotationComparisonModal({ request, cotizaciones, onClose }: QuotationComparisonModalProps) {
+export function QuotationComparisonModal({ request, cotizaciones, onClose, readOnly = false }: QuotationComparisonModalProps) {
   const [viewingComprobante, setViewingComprobante] = useState<CotizacionGuardada | null>(null)
   
   // Selección por producto: { nombreProducto: { proveedorId, cotizacionId, ... } }
@@ -199,7 +200,10 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
   const totalProductos = analisisPorProducto.length
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+    <div className={cn(
+      "fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto",
+      readOnly ? "z-[60]" : "z-50"
+    )}>
       <div 
         className="bg-card rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col border border-border my-auto"
         role="dialog"
@@ -211,7 +215,7 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
           <div>
             <h2 id="modal-title" className="text-lg font-semibold text-foreground flex items-center gap-2">
               <TrendingDown className="h-5 w-5 text-primary" />
-              Comparación de Cotizaciones
+              {readOnly ? 'Comparativa Original (Solo Lectura)' : 'Comparación de Cotizaciones'}
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               Solicitud <span className="font-mono font-medium">{request.codigo}</span> · {cotizaciones.length} cotizaciones · {totalProductos} productos
@@ -225,34 +229,36 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 min-h-0 space-y-6">
-          {/* Acciones rápidas y ahorro potencial */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <Trophy className="h-5 w-5 text-emerald-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-emerald-900">Optimiza tu compra</h3>
-                  <p className="text-sm text-emerald-700 mt-1">
-                    Seleccionando el mejor precio por producto puedes ahorrar hasta{' '}
-                    <span className="font-semibold">{formatCurrency(ahorroSeleccionIndividual)}</span> respecto a comprar todo con un solo proveedor.
-                  </p>
+          {/* Acciones rápidas y ahorro potencial - Solo en modo edición */}
+          {!readOnly && (
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Trophy className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-emerald-900">Optimiza tu compra</h3>
+                    <p className="text-sm text-emerald-700 mt-1">
+                      Seleccionando el mejor precio por producto puedes ahorrar hasta{' '}
+                      <span className="font-semibold">{formatCurrency(ahorroSeleccionIndividual)}</span> respecto a comprar todo con un solo proveedor.
+                    </p>
+                  </div>
                 </div>
               </div>
+              
+              <Button 
+                onClick={seleccionarMejoresPrecios}
+                className="gap-2 h-auto py-3 px-4 bg-primary hover:bg-primary/90"
+              >
+                <Sparkles className="h-4 w-4" />
+                <div className="text-left">
+                  <div className="font-medium">Seleccionar mejores precios</div>
+                  <div className="text-xs opacity-80">Auto-optimizar por producto</div>
+                </div>
+              </Button>
             </div>
-            
-            <Button 
-              onClick={seleccionarMejoresPrecios}
-              className="gap-2 h-auto py-3 px-4 bg-primary hover:bg-primary/90"
-            >
-              <Sparkles className="h-4 w-4" />
-              <div className="text-left">
-                <div className="font-medium">Seleccionar mejores precios</div>
-                <div className="text-xs opacity-80">Auto-optimizar por producto</div>
-              </div>
-            </Button>
-          </div>
+          )}
 
           {/* Resumen de proveedores */}
           <div className="space-y-3">
@@ -295,9 +301,9 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-                Selecciona proveedor por producto
+                {readOnly ? 'Comparativa de Precios' : 'Selecciona proveedor por producto'}
               </h3>
-              {numSeleccionados > 0 && (
+              {!readOnly && numSeleccionados > 0 && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -322,9 +328,11 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
                           </div>
                         </th>
                       ))}
-                      <th className="px-4 py-3 text-center font-semibold text-primary bg-primary/5 min-w-[140px]">
-                        Seleccionado
-                      </th>
+                      {!readOnly && (
+                        <th className="px-4 py-3 text-center font-semibold text-primary bg-primary/5 min-w-[140px]">
+                          Seleccionado
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -344,6 +352,37 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
                             const esMejor = precioInfo?.subtotal === producto.minPrecio
                             const esPeor = precioInfo?.subtotal === producto.maxPrecio && cotizaciones.length > 1
                             const estaSeleccionado = seleccionado?.cotizacionId === cot.id
+                            
+                            // En modo readOnly, solo mostrar la información sin interactividad
+                            if (readOnly) {
+                              return (
+                                <td 
+                                  key={cot.id} 
+                                  className={cn(
+                                    'px-4 py-3 text-center',
+                                    esMejor && 'bg-emerald-50/50',
+                                    esPeor && 'bg-red-50/50'
+                                  )}
+                                >
+                                  <div className={cn(
+                                    'font-mono font-medium',
+                                    esMejor && 'text-emerald-600',
+                                    esPeor && 'text-red-600'
+                                  )}>
+                                    {formatCurrency(precioInfo?.subtotal || 0)}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    {formatCurrency(precioInfo?.precioUnitario || 0)}/u
+                                    {precioInfo?.descuento ? ` (-${precioInfo.descuento}%)` : ''}
+                                  </div>
+                                  {esMejor && (
+                                    <span className="inline-block text-xs text-emerald-600 font-medium mt-1">
+                                      Mejor precio
+                                    </span>
+                                  )}
+                                </td>
+                              )
+                            }
                             
                             return (
                               <td 
@@ -396,20 +435,22 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
                               </td>
                             )
                           })}
-                          <td className="px-4 py-3 text-center bg-primary/5">
-                            {seleccionado ? (
-                              <div>
-                                <div className="text-xs text-muted-foreground truncate max-w-[120px] mx-auto" title={seleccionado.proveedorNombre}>
-                                  {seleccionado.proveedorNombre.split(' ').slice(0, 2).join(' ')}
+                          {!readOnly && (
+                            <td className="px-4 py-3 text-center bg-primary/5">
+                              {seleccionado ? (
+                                <div>
+                                  <div className="text-xs text-muted-foreground truncate max-w-[120px] mx-auto" title={seleccionado.proveedorNombre}>
+                                    {seleccionado.proveedorNombre.split(' ').slice(0, 2).join(' ')}
+                                  </div>
+                                  <div className="font-mono font-semibold text-primary">
+                                    {formatCurrency(seleccionado.subtotal)}
+                                  </div>
                                 </div>
-                                <div className="font-mono font-semibold text-primary">
-                                  {formatCurrency(seleccionado.subtotal)}
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">Sin seleccionar</span>
-                            )}
-                          </td>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">Sin seleccionar</span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       )
                     })}
@@ -419,8 +460,8 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
             </div>
           </div>
 
-          {/* Resumen de selección por proveedor */}
-          {resumenPorProveedor.length > 0 && (
+          {/* Resumen de selección por proveedor - Solo en modo edición */}
+          {!readOnly && resumenPorProveedor.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
                 Resumen de Compra
@@ -457,7 +498,9 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
         {/* Footer */}
         <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-t border-border bg-muted/50">
           <div className="text-sm">
-            {numSeleccionados > 0 ? (
+            {readOnly ? (
+              <span className="text-muted-foreground">Vista informativa de la comparativa original</span>
+            ) : numSeleccionados > 0 ? (
               <div className="space-y-0.5">
                 <div className="text-muted-foreground">
                   {numSeleccionados} de {totalProductos} productos seleccionados
@@ -472,9 +515,9 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={onClose}>
-              Cerrar
+              {readOnly ? 'Volver' : 'Cerrar'}
             </Button>
-            {numSeleccionados === totalProductos && (
+            {!readOnly && numSeleccionados === totalProductos && (
               <Button className="gap-2">
                 <Check className="h-4 w-4" />
                 Confirmar Selección
@@ -486,7 +529,10 @@ export function QuotationComparisonModal({ request, cotizaciones, onClose }: Quo
 
       {/* Modal para ver comprobante */}
       {viewingComprobante && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70">
+        <div className={cn(
+          "fixed inset-0 flex items-center justify-center p-4 bg-black/70",
+          readOnly ? "z-[70]" : "z-[60]"
+        )}>
           <div className="bg-card rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col border border-border">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <div className="flex items-center gap-2">
