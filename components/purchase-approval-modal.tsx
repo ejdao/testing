@@ -202,11 +202,21 @@ export function PurchaseApprovalModal({
             <div className="space-y-3">
               {seleccionesPorProveedor.map((grupo) => (
                 <div key={grupo.proveedorId} className="bg-background rounded-lg border border-border overflow-hidden">
-                  <button
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setShowProveedorDetails(
                       showProveedorDetails === grupo.proveedorId ? null : grupo.proveedorId
                     )}
-                    className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setShowProveedorDetails(
+                          showProveedorDetails === grupo.proveedorId ? null : grupo.proveedorId
+                        )
+                      }
+                    }}
+                    className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <Building2 className="h-5 w-5 text-muted-foreground" />
@@ -242,7 +252,7 @@ export function PurchaseApprovalModal({
                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
-                  </button>
+                  </div>
                   
                   {showProveedorDetails === grupo.proveedorId && (
                     <div className="border-t border-border">
