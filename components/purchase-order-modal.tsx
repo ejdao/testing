@@ -165,14 +165,10 @@ export function PurchaseOrderModal({ request, recomendacion, onClose, onSubmit }
 
         {/* Content */}
         <div className="px-6 py-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Consecutivo */}
+          {/* Total de la Orden */}
           <div className="bg-muted/50 rounded-lg p-4 border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-sm text-muted-foreground">Consecutivo de Orden de Compra</Label>
-                <p className="text-xl font-mono font-bold text-primary">{consecutivo}</p>
-              </div>
-              <div className="text-right">
                 <Label className="text-sm text-muted-foreground">Total de la Orden</Label>
                 <p className="text-xl font-mono font-bold text-foreground">{formatCurrency(totalOrden)}</p>
               </div>
