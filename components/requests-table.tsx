@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Package, FileText, ClipboardCheck, BarChart3, ShoppingCart, FilePlus } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, ClipboardCheck, BarChart3, ShoppingCart, FilePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PriorityBadge } from '@/components/priority-badge'
 import { cn } from '@/lib/utils'
@@ -228,10 +228,10 @@ export function RequestsTable({ requests, onViewProducts, onAddQuotation, onRevi
                           size="sm"
                           onClick={() => onViewProducts(request)}
                           className="h-8 gap-1.5"
-                          title="Ver productos"
+                          title="Ver detalle de solicitud"
                         >
-                          <Package className="h-3.5 w-3.5" />
-                          <span className="sr-only sm:not-sr-only sm:inline">Productos</span>
+                          <FileText className="h-3.5 w-3.5" />
+                          <span className="sr-only sm:not-sr-only sm:inline">Ver Detalle</span>
                         </Button>
                         {(request.estado === 'REGISTRADO' || request.estado === 'EN REVISIÓN') && (
                           <Button

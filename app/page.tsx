@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { WorkflowStepper } from '@/components/workflow-stepper'
 import { FilterPanel } from '@/components/filter-panel'
 import { RequestsTable } from '@/components/requests-table'
-import { ProductsModal } from '@/components/products-modal'
+import { RequestDetailModal } from '@/components/request-detail-modal'
 import { RequestFormModal } from '@/components/request-form-modal'
 import { QuotationModal } from '@/components/quotation-modal'
 import { ReviewModal, type ReviewData } from '@/components/review-modal'
@@ -328,8 +328,8 @@ const handleViewComparisonFromApproval = useCallback(() => {
         />
       </main>
 
-      {/* Products Modal */}
-      <ProductsModal 
+{/* Request Detail Modal */}
+      <RequestDetailModal
         request={selectedRequest}
         onClose={() => setSelectedRequest(null)}
       />

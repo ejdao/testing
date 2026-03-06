@@ -346,4 +346,81 @@ export function generateMockRecomendacion(
   }
 }
 
-export { centrosAtencion, dependencias, catalogoProductos, catalogoProveedores, preciosHistoricos, generateMockCotizaciones, generateMockRecomendacion }
+// Generar historial de cambios de estado para una solicitud
+export function generateMockHistorialEstados(solicitudId: string, estadoActual: string): import('./types').CambioEstado[] {
+  const baseSeed = solicitudId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  
+  // Definir el flujo de estados
+  const flujoEstados = [
+    'REGISTRADO',
+    'APROBADO PARA COTIZAR',
+    'CON COTIZACIÓN(ES)',
+    'COMPRA POR APROBAR',
+    'COMPRA APROBADA',
+    'ORDEN PENDIENTE',
+    'PENDIENTE POR PROGRAMAR OC',
+    'PENDIENTE POR CONTABILIZAR OC',
+    'PENDIENTE POR PAGAR OC',
+    'PROCESO FINALIZADO'
+  ]
+  
+  // Encontrar el índice del estado actual
+  let estadoIndex = flujoEstados.findIndex(e => e === estadoActual)
+  if (estadoIndex === -1) {
+    // Si no coincide exactamente, buscar uno similar
+    estadoIndex = flujoEstados.findIndex(e => estadoActual.includes(e.split(' ')[0]))
+    if (estadoIndex === -1) estadoIndex = 2 // Default
+  }
+  
+  const historial: import('./types').CambioEstado[] = []
+  
+  // Usuarios para el historial con sus documentos
+  const usuariosHistorial = [
+    { nombre: 'María José Hernández Castro', documento: '1.023.456.789' },
+    { nombre: 'Carlos Alberto Gómez Vargas', documento: '79.876.543' },
+    { nombre: 'Ana Patricia Rodríguez López', documento: '52.123.456' },
+    { nombre: 'Jorge Luis Martínez Díaz', documento: '80.567.890' },
+    { nombre: 'Sandra Milena Torres Ruiz', documento: '1.098.765.432' },
+    { nombre: 'Pedro Antonio García Mesa', documento: '19.345.678' },
+  ]
+  
+  const observacionesHistorial = [
+    'Solicitud registrada correctamente en el sistema.',
+    'Solicitud revisada y aprobada para iniciar proceso de cotización.',
+    'Se han recibido cotizaciones de proveedores.',
+    'Cotizaciones evaluadas, se remite para aprobación de compra.',
+    'Compra aprobada por la gerencia administrativa.',
+    'Se procede a generar la orden de compra.',
+    'Orden de compra programada para entrega.',
+    'Productos recibidos, pendiente contabilización.',
+    'Factura contabilizada, pendiente proceso de pago.',
+    'Pago realizado. Proceso finalizado exitosamente.'
+  ]
+  
+  // Generar historial desde el inicio hasta el estado actual
+  let fechaBase = new Date('2026-02-15')
+  
+  for (let i = 0; i <= estadoIndex; i++) {
+    const seed = baseSeed + i * 50
+    const usuario = usuariosHistorial[Math.floor(seededRandom(seed) * usuariosHistorial.length)]
+    
+    // Agregar días aleatorios entre cambios de estado
+    fechaBase = new Date(fechaBase.getTime() + Math.floor(seededRandom(seed + 1) * 3 + 1) * 24 * 60 * 60 * 1000)
+    
+    historial.push({
+      id: `HIST-${solicitudId}-${i + 1}`,
+      solicitudId,
+      estadoAnterior: i === 0 ? 'NUEVO' : flujoEstados[i - 1],
+      estadoNuevo: flujoEstados[i],
+      fecha: new Date(fechaBase),
+      usuarioId: `USR-${Math.floor(seededRandom(seed + 2) * 1000)}`,
+      usuarioNombre: usuario.nombre,
+      usuarioDocumento: usuario.documento,
+      observaciones: observacionesHistorial[i] || 'Cambio de estado registrado.'
+    })
+  }
+  
+  return historial
+}
+
+export { centrosAtencion, dependencias, catalogoProductos, catalogoProveedores, preciosHistoricos, generateMockCotizaciones, generateMockRecomendacion, generateMockHistorialEstados }

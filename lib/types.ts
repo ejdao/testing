@@ -171,3 +171,16 @@ export interface OrdenCompra {
   totalOrden: number
   fechaCreacion: Date
 }
+
+// Historial de cambios de estado
+export interface CambioEstado {
+  id: string
+  solicitudId: string
+  estadoAnterior: string
+  estadoNuevo: string
+  fecha: Date
+  usuarioId: string
+  usuarioNombre: string
+  usuarioDocumento: string
+  observaciones: string
+}
