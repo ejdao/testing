@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Package, FileText, ClipboardCheck, BarChart3, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PriorityBadge } from '@/components/priority-badge'
@@ -21,29 +21,42 @@ interface RequestsTableProps {
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 20, 30, 50]
 
-function formatDate(date: Date): { date: string; time: string } {
-  const day = date.getDate()
-  const month = date.toLocaleString('es', { month: 'short' }).toUpperCase()
-  const year = date.getFullYear()
-  
+const MONTHS_ES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+
+function formatDateString(date: Date): string {
+  // Use UTC methods for consistent server/client rendering
+  const day = date.getUTCDate()
+  const month = MONTHS_ES[date.getUTCMonth()]
+  const year = date.getUTCFullYear()
+  return `${day}/${month}/${year}`
+}
+
+function calculateTimeAgo(date: Date): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffDays = Math.floor(diffHours / 24)
   
-  let timeAgo = ''
   if (diffDays > 0) {
-    timeAgo = `${diffDays} día${diffDays > 1 ? 's' : ''}`
+    return `${diffDays} día${diffDays > 1 ? 's' : ''}`
   } else if (diffHours > 0) {
-    timeAgo = `${diffHours} hora${diffHours > 1 ? 's' : ''}`
+    return `${diffHours} hora${diffHours > 1 ? 's' : ''}`
   } else {
-    timeAgo = 'Hace momentos'
+    return 'Hace momentos'
   }
+}
+
+// Client-only component to display time ago without hydration mismatch
+function TimeAgo({ date }: { date: Date }) {
+  const [timeAgo, setTimeAgo] = useState<string>('')
   
-  return {
-    date: `${day}/${month}/${year}`,
-    time: timeAgo
-  }
+  useEffect(() => {
+    setTimeAgo(calculateTimeAgo(date))
+  }, [date])
+  
+  if (!timeAgo) return null
+  
+  return <p className="text-xs text-muted-foreground">{timeAgo}</p>
 }
 
 function formatCurrency(value: number): string {
@@ -151,9 +164,6 @@ export function RequestsTable({ requests, onViewProducts, onAddQuotation, onRevi
               </tr>
             ) : (
               paginatedRequests.map((request) => {
-                const creacion = formatDate(request.fechaCreacion)
-                const ultimoCambio = formatDate(request.ultimoCambioEstado)
-                
                 return (
                   <tr key={request.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
@@ -192,14 +202,14 @@ export function RequestsTable({ requests, onViewProducts, onAddQuotation, onRevi
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-sm">
-                        <p className="text-foreground">{creacion.date}</p>
-                        <p className="text-xs text-muted-foreground">{creacion.time}</p>
+                        <p className="text-foreground">{formatDateString(request.fechaCreacion)}</p>
+                        <TimeAgo date={request.fechaCreacion} />
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-sm">
-                        <p className="text-foreground">{ultimoCambio.date}</p>
-                        <p className="text-xs text-muted-foreground">{ultimoCambio.time}</p>
+                        <p className="text-foreground">{formatDateString(request.ultimoCambioEstado)}</p>
+                        <TimeAgo date={request.ultimoCambioEstado} />
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
