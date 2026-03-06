@@ -1,176 +1,153 @@
-// ── Roles ──
-export type Rol = "central" | "enfermera" | "conductor" | "medico" | "admin"
+export type Priority = 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA'
 
-// ── Usuario ──
-export interface Usuario {
+export type RequestStatus = 
+  | 'NO_ASIGNADAS'
+  | 'REGISTRADOS' 
+  | 'APROBADAS_COTIZAR'
+  | 'CON_COTIZACIONES'
+  | 'COMPRAS_APROBAR'
+  | 'ORDENES_PENDIENTES'
+  | 'PENDIENTES_PROGRAMAR'
+  | 'PENDIENTES_CONTABILIZAR'
+  | 'PENDIENTES_PAGAR'
+  | 'FINALIZADO'
+
+export type RequestType = 'PRODUCTOS' | 'SERVICIOS'
+
+export interface PurchaseRequest {
   id: string
-  nombre: string
-  apellido: string
-  rol: Rol
-  servicio?: string
-  turno?: "diurno" | "nocturno"
-  documento?: string
-  email?: string
-}
-
-// ── Paciente ──
-export interface Paciente {
-  nombreCompleto: string
-  documento: string
-  tipoDocumento: "CC" | "TI" | "CE" | "PA" | "RC"
-  edad: number
-  sexo: "M" | "F"
-  eps: string
-  tipoAfiliacion: "contributivo" | "subsidiado" | "vinculado" | "particular"
-  diagnostico: string
-  cama?: string
-}
-
-// ── Signos Vitales ──
-export interface SignosVitales {
-  tensionSistolica: number
-  tensionDiastolica: number
-  frecuenciaCardiaca: number
-  frecuenciaRespiratoria: number
-  spo2: number
-  temperatura: number
-  glasgow: number
-}
-
-// ── Traslado ──
-export type TipoTraslado = "primario" | "secundario"
-export type PrioridadTraslado = "urgente" | "programado"
-export type EstadoTraslado =
-  | "pendiente"
-  | "asignado"
-  | "en_camino"
-  | "en_origen"
-  | "en_traslado"
-  | "entregado"
-  | "completado"
-  | "cancelado"
-
-export interface Traslado {
-  id: string
-  tipo: TipoTraslado
-  prioridad: PrioridadTraslado
-  estado: EstadoTraslado
-  paciente: Paciente
-  signosVitales: SignosVitales
-  servicioOrigen: string
-  institucionOrigen: string
-  servicioDestino: string
-  institucionDestino: string
-  motivoTraslado: string
-  requiereMedico: boolean
-  notaEnfermeria: string
-  observaciones: string
-  fechaSolicitud: string
-  fechaAsignacion?: string
-  fechaInicio?: string
-  fechaFinalizacion?: string
-  enfermeroSolicitante: string
-  enfermeroSolicitanteId: string
-  movilAsignada?: string
-  operadorCentral?: string
-  conductorAsignado?: string
-  equipoRequerido: string[]
-}
-
-// ── Ambulancia / Movil ──
-export type TipoMovil = "basica" | "medicalizada" | "TAM"
-export type EstadoMovil =
-  | "disponible"
-  | "en_servicio"
-  | "retornando"
-  | "mantenimiento"
-  | "fuera_servicio"
-
-export interface Tripulante {
-  id: string
-  nombre: string
-  rol: "conductor" | "medico" | "enfermero" | "auxiliar"
-}
-
-export interface Movil {
-  id: string
-  numero: string
-  placa: string
-  tipo: TipoMovil
-  estado: EstadoMovil
-  tripulacion: Tripulante[]
-  trasladoActual?: string
-  ubicacion?: string
-}
-
-// ── Evento Timeline ──
-export interface EventoTimeline {
-  id: string
-  trasladoId: string
-  tipo: EstadoTraslado
-  descripcion: string
-  fecha: string
+  codigo: string
+  dependencia: string
+  tipoSolicitud: RequestType
+  estado: string
   usuario: string
+  centroAtencion: string
+  fechaCreacion: Date
+  ultimoCambioEstado: Date
+  totalFacturado: number
+  prioridad: Priority
+  justificacion: string
 }
 
-// ── Constantes ──
-export const SERVICIOS_HOSPITALARIOS = [
-  "UCI Adultos",
-  "UCI Pediatrica",
-  "UCI Neonatal",
-  "Urgencias",
-  "Hospitalizacion",
-  "Cirugia",
-  "Pediatria",
-  "Ginecologia",
-  "Traumatologia",
-  "Medicina Interna",
-  "Cardiologia",
-  "Neurologia",
-  "Oncologia",
-  "Nefrologia",
-  "Consulta Externa",
-  "Imagenologia",
-  "Laboratorio",
-] as const
+export interface Product {
+  id: string
+  nombre: string
+  descripcion: string
+  cantidad: number
+  unidad: string
+  precioEstimado: number
+}
 
-export const INSTITUCIONES = [
-  "Hospital Universitario San Jorge",
-  "Clinica Los Rosales",
-  "Hospital San Pedro y San Pablo",
-  "ESE Salud Pereira",
-  "Clinica Comfamiliar",
-  "Hospital de Kennedy",
-  "Clinica San Rafael",
-  "Hospital Infantil",
-  "Centro Medico Especializado",
-] as const
+export interface StepperItem {
+  id: RequestStatus
+  label: string
+  count: number
+  icon: React.ReactNode
+}
 
-export const EQUIPO_DISPONIBLE = [
-  "Oxigeno",
-  "Monitor cardiaco",
-  "Bomba de infusion",
-  "Ventilador mecanico",
-  "Aspirador de secreciones",
-  "Colchon de vacio",
-  "Tabla espinal",
-  "Collar cervical",
-  "Incubadora",
-  "Aislamiento",
-] as const
+export interface FilterState {
+  search: string
+  centroAtencion: string
+  prioridad: Priority | ''
+  tipoSolicitud: RequestType | ''
+  fechaDesde: string
+  fechaHasta: string
+}
 
-export const EPS_LISTA = [
-  "Nueva EPS",
-  "Sura EPS",
-  "Salud Total",
-  "Coomeva EPS",
-  "Sanitas",
-  "Famisanar",
-  "Compensar",
-  "Medimas",
-  "Coosalud",
-  "Mutual SER",
-  "Asmet Salud",
-  "Emssanar",
-  "Particular",
-] as const
+export type ItemType = 'PRODUCTO' | 'ACTIVO_FIJO'
+
+export interface RequestItem {
+  id: string
+  nombreItem: string
+  esNuevoProducto: boolean
+  fichaTecnica: File | null
+  tipoItem: ItemType | ''
+  cantidad: number
+  marca: string
+  descripcion: string
+}
+
+export interface ProductoCatalogo {
+  id: string
+  codigo: string
+  nombre: string
+  categoria: string
+}
+
+export interface Proveedor {
+  id: string
+  nit: string
+  nombre: string
+  contacto: string
+  telefono: string
+}
+
+export interface ProductoCotizacion {
+  productoId: string
+  nombre: string
+  cantidad: number
+  precioAnterior?: number
+  precio: number
+  descuento: number
+  total: number
+  incluyeIva: boolean
+}
+
+export interface Cotizacion {
+  proveedorId: string
+  proveedorNombre: string
+  esNuevoProveedor: boolean
+  esUltimaCotizacion: boolean
+  comprobante: File | null
+  productos: ProductoCotizacion[]
+}
+
+// Cotizaciones guardadas (para comparación)
+export interface CotizacionGuardada {
+  id: string
+  solicitudId: string
+  proveedorId: string
+  proveedorNombre: string
+  proveedorNit: string
+  fechaCotizacion: Date
+  comprobanteUrl: string
+  comprobanteTipo: 'pdf' | 'image' | 'word' | 'excel'
+  esUltimaCotizacion: boolean
+  productos: ProductoCotizacionGuardada[]
+  totalSinIva: number
+  totalConIva: number
+}
+
+export interface ProductoCotizacionGuardada {
+  productoId: string
+  nombre: string
+  cantidad: number
+  precioUnitario: number
+  descuento: number
+  subtotal: number
+  incluyeIva: boolean
+}
+
+// Selección de productos recomendados (resultado de comparación)
+export interface SeleccionProducto {
+  productoId: string
+  productoNombre: string
+  cantidad: number
+  cotizacionId: string
+  proveedorId: string
+  proveedorNombre: string
+  precioUnitario: number
+  descuento: number
+  subtotal: number
+  incluyeIva: boolean
+  esMejorPrecio: boolean
+}
+
+export interface RecomendacionCompra {
+  solicitudId: string
+  fechaRecomendacion: Date
+  usuarioRecomendador: string
+  selecciones: SeleccionProducto[]
+  totalGeneral: number
+  observacionesRecomendador: string
+}

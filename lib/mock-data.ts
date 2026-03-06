@@ -1,501 +1,349 @@
-import type {
-  Usuario,
-  Movil,
-  Traslado,
-  EventoTimeline,
-} from "./types"
+import type { PurchaseRequest, Product, Priority, RequestStatus } from './types'
 
-// ── Usuarios de prueba ──
-export const MOCK_USUARIOS: Usuario[] = [
-  {
-    id: "u1",
-    nombre: "Carlos",
-    apellido: "Ramirez",
-    rol: "central",
-    turno: "diurno",
-    email: "carlos.ramirez@hospital.co",
-  },
-  {
-    id: "u2",
-    nombre: "Maria",
-    apellido: "Lopez",
-    rol: "enfermera",
-    servicio: "UCI Adultos",
-    turno: "diurno",
-    email: "maria.lopez@hospital.co",
-  },
-  {
-    id: "u3",
-    nombre: "Andres",
-    apellido: "Garcia",
-    rol: "conductor",
-    turno: "diurno",
-    email: "andres.garcia@hospital.co",
-  },
-  {
-    id: "u4",
-    nombre: "Laura",
-    apellido: "Martinez",
-    rol: "enfermera",
-    servicio: "Urgencias",
-    turno: "nocturno",
-    email: "laura.martinez@hospital.co",
-  },
-  {
-    id: "u5",
-    nombre: "Jorge",
-    apellido: "Hernandez",
-    rol: "medico",
-    servicio: "UCI Adultos",
-    turno: "diurno",
-    email: "jorge.hernandez@hospital.co",
-  },
-  {
-    id: "u6",
-    nombre: "Sandra",
-    apellido: "Restrepo",
-    rol: "enfermera",
-    servicio: "Hospitalizacion",
-    turno: "diurno",
-    email: "sandra.restrepo@hospital.co",
-  },
+// Seeded random function for deterministic data generation
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9999) * 10000
+  return x - Math.floor(x)
+}
+
+const centrosAtencion = [
+  'Clinica medicos',
+  'Alta complejidad'
 ]
 
-// ── Moviles / Ambulancias ──
-export const MOCK_MOVILES: Movil[] = [
-  {
-    id: "m1",
-    numero: "M-01",
-    placa: "TXR-456",
-    tipo: "medicalizada",
-    estado: "disponible",
-    tripulacion: [
-      { id: "t1", nombre: "Pedro Duarte", rol: "conductor" },
-      { id: "t2", nombre: "Ana Mejia", rol: "medico" },
-      { id: "t3", nombre: "Luis Rios", rol: "enfermero" },
-    ],
-  },
-  {
-    id: "m2",
-    numero: "M-02",
-    placa: "TXR-789",
-    tipo: "basica",
-    estado: "en_servicio",
-    trasladoActual: "tr3",
-    ubicacion: "En camino a Clinica Los Rosales",
-    tripulacion: [
-      { id: "t4", nombre: "Andres Garcia", rol: "conductor" },
-      { id: "t5", nombre: "Diana Castro", rol: "auxiliar" },
-    ],
-  },
-  {
-    id: "m3",
-    numero: "M-03",
-    placa: "TXR-012",
-    tipo: "medicalizada",
-    estado: "disponible",
-    tripulacion: [
-      { id: "t6", nombre: "Felipe Ortiz", rol: "conductor" },
-      { id: "t7", nombre: "Carmen Vega", rol: "medico" },
-      { id: "t8", nombre: "Rosa Pinto", rol: "enfermero" },
-    ],
-  },
-  {
-    id: "m4",
-    numero: "M-04",
-    placa: "TXR-345",
-    tipo: "basica",
-    estado: "retornando",
-    ubicacion: "Av. 30 de Agosto con Cll 17",
-    tripulacion: [
-      { id: "t9", nombre: "Marco Salazar", rol: "conductor" },
-      { id: "t10", nombre: "Jenny Torres", rol: "auxiliar" },
-    ],
-  },
-  {
-    id: "m5",
-    numero: "M-05",
-    placa: "TXR-678",
-    tipo: "TAM",
-    estado: "mantenimiento",
-    tripulacion: [],
-  },
-  {
-    id: "m6",
-    numero: "M-06",
-    placa: "TXR-901",
-    tipo: "basica",
-    estado: "en_servicio",
-    trasladoActual: "tr5",
-    ubicacion: "Hospital San Pedro y San Pablo",
-    tripulacion: [
-      { id: "t11", nombre: "Esteban Mora", rol: "conductor" },
-      { id: "t12", nombre: "Paola Ruiz", rol: "auxiliar" },
-    ],
-  },
-  {
-    id: "m7",
-    numero: "M-07",
-    placa: "TXR-234",
-    tipo: "medicalizada",
-    estado: "disponible",
-    tripulacion: [
-      { id: "t13", nombre: "Ivan Cortes", rol: "conductor" },
-      { id: "t14", nombre: "Natalia Diaz", rol: "medico" },
-      { id: "t15", nombre: "Oscar Pena", rol: "enfermero" },
-    ],
-  },
-  {
-    id: "m8",
-    numero: "M-08",
-    placa: "TXR-567",
-    tipo: "basica",
-    estado: "fuera_servicio",
-    tripulacion: [],
-  },
+const dependencias = [
+  'MANTENIMIENTO ALTA COMPLEJIDAD',
+  'UNIDAD FUNCIONAL DE UCI ADULTO',
+  'SUB-GERENCIA ADMINISTRATIVA',
+  'TIC SISTEMAS ALTA COMPLEJIDAD',
+  'BIOMEDICINA ALTA',
+  'FARMACIA CENTRAL',
+  'URGENCIAS GENERAL',
+  'LABORATORIO CLINICO',
+  'IMAGENOLOGIA Y RADIOLOGIA',
+  'HOSPITALIZACION GENERAL'
 ]
 
-// ── Traslados ──
-export const MOCK_TRASLADOS: Traslado[] = [
-  {
-    id: "tr1",
-    tipo: "secundario",
-    prioridad: "urgente",
-    estado: "pendiente",
-    paciente: {
-      nombreCompleto: "Juan David Perez Gomez",
-      documento: "1088345678",
-      tipoDocumento: "CC",
-      edad: 45,
-      sexo: "M",
-      eps: "Nueva EPS",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "IAM con elevacion ST - Requiere cateterismo cardiaco",
-      cama: "UCI-A12",
-    },
-    signosVitales: {
-      tensionSistolica: 90,
-      tensionDiastolica: 60,
-      frecuenciaCardiaca: 110,
-      frecuenciaRespiratoria: 24,
-      spo2: 92,
-      temperatura: 36.8,
-      glasgow: 15,
-    },
-    servicioOrigen: "UCI Adultos",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "Hemodinamia",
-    institucionDestino: "Clinica Los Rosales",
-    motivoTraslado: "Cateterismo cardiaco urgente - No disponible en la institucion",
-    requiereMedico: true,
-    notaEnfermeria: "Paciente con dolor toracico persistente, infusion de heparina en curso. Acceso venoso central subclavio derecho. Requiere monitoreo continuo durante traslado.",
-    observaciones: "Llevar bomba de infusion y monitor cardiaco",
-    fechaSolicitud: "2026-03-04T06:30:00",
-    enfermeroSolicitante: "Maria Lopez",
-    enfermeroSolicitanteId: "u2",
-    equipoRequerido: ["Monitor cardiaco", "Bomba de infusion", "Oxigeno"],
-  },
-  {
-    id: "tr2",
-    tipo: "primario",
-    prioridad: "programado",
-    estado: "pendiente",
-    paciente: {
-      nombreCompleto: "Ana Sofia Rodriguez Cardona",
-      documento: "42156789",
-      tipoDocumento: "CC",
-      edad: 67,
-      sexo: "F",
-      eps: "Sura EPS",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "Fractura de cadera derecha - Programada para cirugia",
-      cama: "HOSP-305",
-    },
-    signosVitales: {
-      tensionSistolica: 130,
-      tensionDiastolica: 85,
-      frecuenciaCardiaca: 78,
-      frecuenciaRespiratoria: 18,
-      spo2: 97,
-      temperatura: 36.5,
-      glasgow: 15,
-    },
-    servicioOrigen: "Hospitalizacion",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "Imagenologia",
-    institucionDestino: "Clinica Comfamiliar",
-    motivoTraslado: "TAC preoperatorio - Equipo en mantenimiento",
-    requiereMedico: false,
-    notaEnfermeria: "Paciente orientada, colaboradora. Inmovilizacion con ferula en MID. Dolor controlado con analgesia oral. Alergia a la Dipirona.",
-    observaciones: "Paciente con dificultad para la movilizacion, requiere camilla",
-    fechaSolicitud: "2026-03-04T07:15:00",
-    enfermeroSolicitante: "Sandra Restrepo",
-    enfermeroSolicitanteId: "u6",
-    equipoRequerido: ["Tabla espinal"],
-  },
-  {
-    id: "tr3",
-    tipo: "secundario",
-    prioridad: "urgente",
-    estado: "en_traslado",
-    paciente: {
-      nombreCompleto: "Carlos Alberto Mesa Rios",
-      documento: "10234567",
-      tipoDocumento: "CC",
-      edad: 55,
-      sexo: "M",
-      eps: "Salud Total",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "ACV isquemico agudo - Ventana trombolisis",
-      cama: "URG-07",
-    },
-    signosVitales: {
-      tensionSistolica: 180,
-      tensionDiastolica: 100,
-      frecuenciaCardiaca: 95,
-      frecuenciaRespiratoria: 22,
-      spo2: 94,
-      temperatura: 37.2,
-      glasgow: 12,
-    },
-    servicioOrigen: "Urgencias",
-    institucionOrigen: "ESE Salud Pereira",
-    servicioDestino: "UCI Adultos",
-    institucionDestino: "Hospital Universitario San Jorge",
-    motivoTraslado: "Requiere trombolisis - UCI disponible en destino",
-    requiereMedico: true,
-    notaEnfermeria: "Paciente somnoliento, hemiparesia izquierda. Glasgow 12 (O4-V3-M5). Con oxigeno por canula nasal a 3L. Infusion SSN 0.9%.",
-    observaciones: "Urgente, ventana terapeutica limitada",
-    fechaSolicitud: "2026-03-04T05:45:00",
-    fechaAsignacion: "2026-03-04T05:52:00",
-    fechaInicio: "2026-03-04T06:10:00",
-    enfermeroSolicitante: "Laura Martinez",
-    enfermeroSolicitanteId: "u4",
-    movilAsignada: "m2",
-    operadorCentral: "Carlos Ramirez",
-    conductorAsignado: "Andres Garcia",
-    equipoRequerido: ["Monitor cardiaco", "Oxigeno", "Aspirador de secreciones"],
-  },
-  {
-    id: "tr4",
-    tipo: "primario",
-    prioridad: "programado",
-    estado: "completado",
-    paciente: {
-      nombreCompleto: "Lucia Fernanda Gomez Parra",
-      documento: "25890123",
-      tipoDocumento: "CC",
-      edad: 32,
-      sexo: "F",
-      eps: "Coomeva EPS",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "Embarazo de 38 semanas - Control fetal",
-      cama: "GIN-202",
-    },
-    signosVitales: {
-      tensionSistolica: 120,
-      tensionDiastolica: 75,
-      frecuenciaCardiaca: 82,
-      frecuenciaRespiratoria: 17,
-      spo2: 98,
-      temperatura: 36.6,
-      glasgow: 15,
-    },
-    servicioOrigen: "Ginecologia",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "Ecografia",
-    institucionDestino: "Clinica San Rafael",
-    motivoTraslado: "Ecografia doppler fetal de control",
-    requiereMedico: false,
-    notaEnfermeria: "Paciente estable, con movimientos fetales positivos. Sin contracciones. Via oral tolerada.",
-    observaciones: "",
-    fechaSolicitud: "2026-03-04T04:00:00",
-    fechaAsignacion: "2026-03-04T04:10:00",
-    fechaInicio: "2026-03-04T04:30:00",
-    fechaFinalizacion: "2026-03-04T05:45:00",
-    enfermeroSolicitante: "Maria Lopez",
-    enfermeroSolicitanteId: "u2",
-    movilAsignada: "m4",
-    operadorCentral: "Carlos Ramirez",
-    conductorAsignado: "Marco Salazar",
-    equipoRequerido: [],
-  },
-  {
-    id: "tr5",
-    tipo: "secundario",
-    prioridad: "urgente",
-    estado: "en_origen",
-    paciente: {
-      nombreCompleto: "Miguel Angel Torres Velez",
-      documento: "1088901234",
-      tipoDocumento: "CC",
-      edad: 8,
-      sexo: "M",
-      eps: "Medimas",
-      tipoAfiliacion: "subsidiado",
-      diagnostico: "Politraumatismo por accidente de transito",
-      cama: "PED-105",
-    },
-    signosVitales: {
-      tensionSistolica: 95,
-      tensionDiastolica: 55,
-      frecuenciaCardiaca: 130,
-      frecuenciaRespiratoria: 28,
-      spo2: 93,
-      temperatura: 37.5,
-      glasgow: 13,
-    },
-    servicioOrigen: "Pediatria",
-    institucionOrigen: "Hospital Infantil",
-    servicioDestino: "UCI Pediatrica",
-    institucionDestino: "Hospital Universitario San Jorge",
-    motivoTraslado: "Requiere UCI Pediatrica - No disponible en la institucion",
-    requiereMedico: true,
-    notaEnfermeria: "Nino con trauma craneoencefalico moderado y fractura de femur izquierdo. Collar cervical insitu. Infusion de cristaloides en curso.",
-    observaciones: "Pediatrico, manejar con precaucion. Madre acompanante autorizada.",
-    fechaSolicitud: "2026-03-04T06:00:00",
-    fechaAsignacion: "2026-03-04T06:08:00",
-    fechaInicio: "2026-03-04T06:25:00",
-    enfermeroSolicitante: "Laura Martinez",
-    enfermeroSolicitanteId: "u4",
-    movilAsignada: "m6",
-    operadorCentral: "Carlos Ramirez",
-    conductorAsignado: "Esteban Mora",
-    equipoRequerido: ["Monitor cardiaco", "Oxigeno", "Collar cervical", "Tabla espinal"],
-  },
-  {
-    id: "tr6",
-    tipo: "primario",
-    prioridad: "programado",
-    estado: "asignado",
-    paciente: {
-      nombreCompleto: "Rosa Elena Cardenas Zapata",
-      documento: "24567890",
-      tipoDocumento: "CC",
-      edad: 72,
-      sexo: "F",
-      eps: "Mutual SER",
-      tipoAfiliacion: "subsidiado",
-      diagnostico: "ERC estadio IV - Control nefrologico",
-      cama: "MED-408",
-    },
-    signosVitales: {
-      tensionSistolica: 150,
-      tensionDiastolica: 90,
-      frecuenciaCardiaca: 70,
-      frecuenciaRespiratoria: 19,
-      spo2: 96,
-      temperatura: 36.4,
-      glasgow: 15,
-    },
-    servicioOrigen: "Medicina Interna",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "Nefrologia",
-    institucionDestino: "Clinica Comfamiliar",
-    motivoTraslado: "Valoracion por Nefrologia para inicio de dialisis",
-    requiereMedico: false,
-    notaEnfermeria: "Paciente orientada, con edema de miembros inferiores. Dieta hiposodica. Medicamentos: Losartan, Furosemida, Eritropoyetina.",
-    observaciones: "Paciente con movilidad reducida",
-    fechaSolicitud: "2026-03-04T07:00:00",
-    fechaAsignacion: "2026-03-04T07:20:00",
-    enfermeroSolicitante: "Sandra Restrepo",
-    enfermeroSolicitanteId: "u6",
-    movilAsignada: "m1",
-    operadorCentral: "Carlos Ramirez",
-    equipoRequerido: [],
-  },
-  {
-    id: "tr7",
-    tipo: "secundario",
-    prioridad: "urgente",
-    estado: "pendiente",
-    paciente: {
-      nombreCompleto: "Fernando Jose Arias Cano",
-      documento: "10789012",
-      tipoDocumento: "CC",
-      edad: 60,
-      sexo: "M",
-      eps: "Sanitas",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "Sepsis de origen pulmonar - Requiere UCI",
-      cama: "URG-15",
-    },
-    signosVitales: {
-      tensionSistolica: 80,
-      tensionDiastolica: 50,
-      frecuenciaCardiaca: 120,
-      frecuenciaRespiratoria: 30,
-      spo2: 88,
-      temperatura: 39.2,
-      glasgow: 14,
-    },
-    servicioOrigen: "Urgencias",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "UCI Adultos",
-    institucionDestino: "Clinica Los Rosales",
-    motivoTraslado: "UCI llena en nuestra institucion - Requiere ventilacion mecanica",
-    requiereMedico: true,
-    notaEnfermeria: "Paciente febril, taquicardico, con signos de dificultad respiratoria. Antibioticos IV en curso (Piperacilina/Tazobactam). Acceso venoso periferico bilateral.",
-    observaciones: "Prioridad alta, posible necesidad de intubacion en traslado",
-    fechaSolicitud: "2026-03-04T07:45:00",
-    enfermeroSolicitante: "Maria Lopez",
-    enfermeroSolicitanteId: "u2",
-    equipoRequerido: ["Monitor cardiaco", "Oxigeno", "Ventilador mecanico", "Bomba de infusion", "Aspirador de secreciones"],
-  },
-  {
-    id: "tr8",
-    tipo: "primario",
-    prioridad: "programado",
-    estado: "pendiente",
-    paciente: {
-      nombreCompleto: "Patricia Morales de Gutierrez",
-      documento: "25123456",
-      tipoDocumento: "CC",
-      edad: 50,
-      sexo: "F",
-      eps: "Compensar",
-      tipoAfiliacion: "contributivo",
-      diagnostico: "Ca de mama - Control oncologico",
-      cama: "HOSP-210",
-    },
-    signosVitales: {
-      tensionSistolica: 125,
-      tensionDiastolica: 80,
-      frecuenciaCardiaca: 75,
-      frecuenciaRespiratoria: 16,
-      spo2: 99,
-      temperatura: 36.5,
-      glasgow: 15,
-    },
-    servicioOrigen: "Hospitalizacion",
-    institucionOrigen: "Hospital Universitario San Jorge",
-    servicioDestino: "Oncologia",
-    institucionDestino: "Centro Medico Especializado",
-    motivoTraslado: "Sesion de quimioterapia programada",
-    requiereMedico: false,
-    notaEnfermeria: "Paciente estable, orientada. Port-a-cath funcional. Sin nauseas actualmente. Hb 10.2.",
-    observaciones: "",
-    fechaSolicitud: "2026-03-04T08:00:00",
-    enfermeroSolicitante: "Sandra Restrepo",
-    enfermeroSolicitanteId: "u6",
-    equipoRequerido: [],
-  },
+const usuarios = [
+  'MARVING STIVEN DE LA VALLE NIETO',
+  'Jorge Luis Vasco Gutierrez',
+  'OLGA PATRICIA MUÑOZ LOPEZ',
+  'JORGE FERNANDO ARAUJO DIAZ',
+  'EDWARD ALEXANDER MAHECHA RAMIREZ',
+  'CAROLINA ANDREA MENDEZ SILVA',
+  'ROBERTO CARLOS JIMENEZ PARRA',
+  'MARIA FERNANDA GOMEZ TORRES',
+  'ANDRES FELIPE CASTRO RUIZ',
+  'LUCIA PATRICIA HERRERA VEGA'
 ]
 
-// ── Eventos Timeline ──
-export const MOCK_EVENTOS: EventoTimeline[] = [
-  { id: "e1", trasladoId: "tr3", tipo: "pendiente", descripcion: "Solicitud de traslado creada", fecha: "2026-03-04T05:45:00", usuario: "Laura Martinez" },
-  { id: "e2", trasladoId: "tr3", tipo: "asignado", descripcion: "Movil M-02 asignada por Central", fecha: "2026-03-04T05:52:00", usuario: "Carlos Ramirez" },
-  { id: "e3", trasladoId: "tr3", tipo: "en_camino", descripcion: "Movil en camino al origen", fecha: "2026-03-04T06:00:00", usuario: "Andres Garcia" },
-  { id: "e4", trasladoId: "tr3", tipo: "en_origen", descripcion: "Movil llego al origen - Recogiendo paciente", fecha: "2026-03-04T06:10:00", usuario: "Andres Garcia" },
-  { id: "e5", trasladoId: "tr3", tipo: "en_traslado", descripcion: "Paciente a bordo, en traslado al destino", fecha: "2026-03-04T06:20:00", usuario: "Andres Garcia" },
-  { id: "e6", trasladoId: "tr5", tipo: "pendiente", descripcion: "Solicitud de traslado creada", fecha: "2026-03-04T06:00:00", usuario: "Laura Martinez" },
-  { id: "e7", trasladoId: "tr5", tipo: "asignado", descripcion: "Movil M-06 asignada por Central", fecha: "2026-03-04T06:08:00", usuario: "Carlos Ramirez" },
-  { id: "e8", trasladoId: "tr5", tipo: "en_camino", descripcion: "Movil en camino al origen", fecha: "2026-03-04T06:15:00", usuario: "Esteban Mora" },
-  { id: "e9", trasladoId: "tr5", tipo: "en_origen", descripcion: "Movil en origen - Recibiendo paciente", fecha: "2026-03-04T06:25:00", usuario: "Esteban Mora" },
-  { id: "e10", trasladoId: "tr4", tipo: "pendiente", descripcion: "Solicitud de traslado creada", fecha: "2026-03-04T04:00:00", usuario: "Maria Lopez" },
-  { id: "e11", trasladoId: "tr4", tipo: "asignado", descripcion: "Movil M-04 asignada", fecha: "2026-03-04T04:10:00", usuario: "Carlos Ramirez" },
-  { id: "e12", trasladoId: "tr4", tipo: "completado", descripcion: "Traslado completado exitosamente", fecha: "2026-03-04T05:45:00", usuario: "Marco Salazar" },
-  { id: "e13", trasladoId: "tr6", tipo: "pendiente", descripcion: "Solicitud de traslado creada", fecha: "2026-03-04T07:00:00", usuario: "Sandra Restrepo" },
-  { id: "e14", trasladoId: "tr6", tipo: "asignado", descripcion: "Movil M-01 asignada", fecha: "2026-03-04T07:20:00", usuario: "Carlos Ramirez" },
+const estados: Record<RequestStatus, string[]> = {
+  'NO_ASIGNADAS': ['SIN ASIGNAR', 'PENDIENTE ASIGNACIÓN'],
+  'REGISTRADOS': ['REGISTRADO', 'EN REVISIÓN'],
+  'APROBADAS_COTIZAR': ['APROBADO PARA COTIZAR', 'EN PROCESO DE COTIZACIÓN'],
+  'CON_COTIZACIONES': ['CON COTIZACIÓN(ES)', 'COTIZADO'],
+  'COMPRAS_APROBAR': ['COMPRA POR APROBAR', 'EN APROBACIÓN'],
+  'ORDENES_PENDIENTES': ['ORDEN DE COMPRA PENDIENTE', 'OC GENERADA'],
+  'PENDIENTES_PROGRAMAR': ['PENDIENTE POR PROGRAMAR OC', 'EN PROGRAMACIÓN'],
+  'PENDIENTES_CONTABILIZAR': ['PENDIENTE POR CONTABILIZAR OC', 'EN CONTABILIZACIÓN'],
+  'PENDIENTES_PAGAR': ['PENDIENTE POR PAGAR OC', 'EN PROCESO DE PAGO'],
+  'FINALIZADO': ['PROCESO FINALIZADO', 'COMPLETADO']
+}
+
+const justificaciones = [
+  'Urgente para atención de pacientes críticos en UCI',
+  'Reposición de inventario agotado',
+  'Requerimiento para procedimiento programado',
+  'Mantenimiento preventivo de equipos',
+  'Solicitud de área administrativa',
+  'Necesidad operativa del servicio',
+  'Pedido regular mensual',
+  'Emergencia sanitaria',
+  'Actualización tecnológica requerida',
+  'Cumplimiento normativo obligatorio'
 ]
+
+export function generateMockRequests(status: RequestStatus, count: number): PurchaseRequest[] {
+  const requests: PurchaseRequest[] = []
+  const statusOptions = estados[status]
+  const statusSeed = Object.keys(estados).indexOf(status) * 1000
+  
+  for (let i = 0; i < count; i++) {
+    const seed = statusSeed + i
+    const prioridades: Priority[] = ['CRITICA', 'ALTA', 'MEDIA', 'BAJA']
+    const tipos: ('PRODUCTOS' | 'SERVICIOS')[] = ['PRODUCTOS', 'SERVICIOS']
+    
+    const fechaCreacion = new Date('2026-03-01')
+    fechaCreacion.setDate(fechaCreacion.getDate() - Math.floor(seededRandom(seed) * 30))
+    
+    const ultimoCambio = new Date(fechaCreacion)
+    ultimoCambio.setHours(ultimoCambio.getHours() + Math.floor(seededRandom(seed + 1) * 72))
+    
+    requests.push({
+      id: `${status}-${i}`,
+      codigo: `${['AC', 'CM', 'SR', 'PR'][Math.floor(seededRandom(seed + 2) * 4)]}${2580 + i}`,
+      dependencia: dependencias[Math.floor(seededRandom(seed + 3) * dependencias.length)],
+      tipoSolicitud: tipos[Math.floor(seededRandom(seed + 4) * tipos.length)],
+      estado: statusOptions[Math.floor(seededRandom(seed + 5) * statusOptions.length)],
+      usuario: usuarios[Math.floor(seededRandom(seed + 6) * usuarios.length)],
+      centroAtencion: centrosAtencion[Math.floor(seededRandom(seed + 7) * centrosAtencion.length)],
+      fechaCreacion,
+      ultimoCambioEstado: ultimoCambio,
+      totalFacturado: seededRandom(seed + 8) > 0.6 ? Math.floor(seededRandom(seed + 9) * 10000000) : 0,
+      prioridad: prioridades[Math.floor(seededRandom(seed + 10) * prioridades.length)],
+      justificacion: justificaciones[Math.floor(seededRandom(seed + 11) * justificaciones.length)]
+    })
+  }
+  
+  return requests
+}
+
+export function generateMockProducts(requestId: string): Product[] {
+  const productos = [
+    { nombre: 'Guantes de látex', unidad: 'CAJA' },
+    { nombre: 'Jeringa 5ml', unidad: 'UNIDAD' },
+    { nombre: 'Alcohol antiséptico', unidad: 'LITRO' },
+    { nombre: 'Gasa estéril', unidad: 'PAQUETE' },
+    { nombre: 'Mascarilla N95', unidad: 'UNIDAD' },
+    { nombre: 'Catéter intravenoso', unidad: 'UNIDAD' },
+    { nombre: 'Suero fisiológico', unidad: 'BOLSA' },
+    { nombre: 'Vendaje elástico', unidad: 'ROLLO' },
+    { nombre: 'Esparadrapo', unidad: 'ROLLO' },
+    { nombre: 'Termómetro digital', unidad: 'UNIDAD' }
+  ]
+  
+  // Create seed from requestId
+  const idSeed = requestId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  
+  const count = Math.floor(seededRandom(idSeed) * 5) + 1
+  
+  // Deterministic selection based on seed
+  const selectedIndices: number[] = []
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(seededRandom(idSeed + i + 100) * productos.length)
+    if (!selectedIndices.includes(idx)) {
+      selectedIndices.push(idx)
+    } else {
+      selectedIndices.push((idx + 1) % productos.length)
+    }
+  }
+  
+  return selectedIndices.map((idx, i) => {
+    const p = productos[idx]
+    return {
+      id: `${requestId}-p${i}`,
+      nombre: p.nombre,
+      descripcion: `Descripción detallada de ${p.nombre}`,
+      cantidad: Math.floor(seededRandom(idSeed + i + 200) * 100) + 1,
+      unidad: p.unidad,
+      precioEstimado: Math.floor(seededRandom(idSeed + i + 300) * 500000) + 10000
+    }
+  })
+}
+
+export const stepperData: Record<RequestStatus, number> = {
+  'NO_ASIGNADAS': 2,
+  'REGISTRADOS': 11,
+  'APROBADAS_COTIZAR': 9,
+  'CON_COTIZACIONES': 1,
+  'COMPRAS_APROBAR': 6,
+  'ORDENES_PENDIENTES': 3,
+  'PENDIENTES_PROGRAMAR': 311,
+  'PENDIENTES_CONTABILIZAR': 22,
+  'PENDIENTES_PAGAR': 38,
+  'FINALIZADO': 1
+}
+
+// Catálogo de productos existentes
+export const catalogoProductos = [
+  { id: 'P001', codigo: 'MED-001', nombre: 'Guantes de látex talla M', categoria: 'Insumos médicos' },
+  { id: 'P002', codigo: 'MED-002', nombre: 'Guantes de látex talla L', categoria: 'Insumos médicos' },
+  { id: 'P003', codigo: 'MED-003', nombre: 'Guantes de nitrilo talla M', categoria: 'Insumos médicos' },
+  { id: 'P004', codigo: 'MED-004', nombre: 'Jeringa desechable 5ml', categoria: 'Insumos médicos' },
+  { id: 'P005', codigo: 'MED-005', nombre: 'Jeringa desechable 10ml', categoria: 'Insumos médicos' },
+  { id: 'P006', codigo: 'MED-006', nombre: 'Jeringa desechable 20ml', categoria: 'Insumos médicos' },
+  { id: 'P007', codigo: 'MED-007', nombre: 'Alcohol antiséptico 70%', categoria: 'Antisépticos' },
+  { id: 'P008', codigo: 'MED-008', nombre: 'Alcohol isopropílico', categoria: 'Antisépticos' },
+  { id: 'P009', codigo: 'MED-009', nombre: 'Gasa estéril 10x10cm', categoria: 'Insumos médicos' },
+  { id: 'P010', codigo: 'MED-010', nombre: 'Gasa estéril 5x5cm', categoria: 'Insumos médicos' },
+  { id: 'P011', codigo: 'MED-011', nombre: 'Mascarilla quirúrgica', categoria: 'Protección' },
+  { id: 'P012', codigo: 'MED-012', nombre: 'Mascarilla N95', categoria: 'Protección' },
+  { id: 'P013', codigo: 'MED-013', nombre: 'Mascarilla KN95', categoria: 'Protección' },
+  { id: 'P014', codigo: 'MED-014', nombre: 'Catéter intravenoso 18G', categoria: 'Insumos médicos' },
+  { id: 'P015', codigo: 'MED-015', nombre: 'Catéter intravenoso 20G', categoria: 'Insumos médicos' },
+  { id: 'P016', codigo: 'MED-016', nombre: 'Suero fisiológico 500ml', categoria: 'Soluciones' },
+  { id: 'P017', codigo: 'MED-017', nombre: 'Suero fisiológico 1000ml', categoria: 'Soluciones' },
+  { id: 'P018', codigo: 'MED-018', nombre: 'Vendaje elástico 4 pulgadas', categoria: 'Vendajes' },
+  { id: 'P019', codigo: 'MED-019', nombre: 'Vendaje elástico 6 pulgadas', categoria: 'Vendajes' },
+  { id: 'P020', codigo: 'MED-020', nombre: 'Esparadrapo microporoso', categoria: 'Vendajes' },
+  { id: 'P021', codigo: 'EQP-001', nombre: 'Termómetro digital', categoria: 'Equipos' },
+  { id: 'P022', codigo: 'EQP-002', nombre: 'Tensiómetro digital', categoria: 'Equipos' },
+  { id: 'P023', codigo: 'EQP-003', nombre: 'Oxímetro de pulso', categoria: 'Equipos' },
+  { id: 'P024', codigo: 'EQP-004', nombre: 'Estetoscopio', categoria: 'Equipos' },
+  { id: 'P025', codigo: 'OFI-001', nombre: 'Papel bond carta', categoria: 'Oficina' },
+  { id: 'P026', codigo: 'OFI-002', nombre: 'Tóner impresora HP', categoria: 'Oficina' },
+  { id: 'P027', codigo: 'OFI-003', nombre: 'Carpeta archivo AZ', categoria: 'Oficina' },
+  { id: 'P028', codigo: 'LIM-001', nombre: 'Desinfectante multiusos', categoria: 'Limpieza' },
+  { id: 'P029', codigo: 'LIM-002', nombre: 'Jabón antibacterial', categoria: 'Limpieza' },
+  { id: 'P030', codigo: 'LIM-003', nombre: 'Gel antibacterial', categoria: 'Limpieza' },
+]
+
+// Catálogo de proveedores
+export const catalogoProveedores = [
+  { id: 'PRV001', nit: '800.123.456-7', nombre: 'Distribuidora Médica Nacional S.A.S', contacto: 'Juan Pérez', telefono: '601-1234567' },
+  { id: 'PRV002', nit: '900.234.567-8', nombre: 'Insumos Hospitalarios del Caribe', contacto: 'María García', telefono: '605-2345678' },
+  { id: 'PRV003', nit: '800.345.678-9', nombre: 'MediEquipos Colombia Ltda', contacto: 'Carlos Rodríguez', telefono: '602-3456789' },
+  { id: 'PRV004', nit: '900.456.789-0', nombre: 'Farmacéuticos Unidos S.A', contacto: 'Ana Martínez', telefono: '601-4567890' },
+  { id: 'PRV005', nit: '800.567.890-1', nombre: 'Suministros Clínicos del Valle', contacto: 'Pedro Sánchez', telefono: '602-5678901' },
+  { id: 'PRV006', nit: '900.678.901-2', nombre: 'BioMed Solutions S.A.S', contacto: 'Laura González', telefono: '601-6789012' },
+  { id: 'PRV007', nit: '800.789.012-3', nombre: 'Equipos Quirúrgicos Andinos', contacto: 'Roberto Díaz', telefono: '604-7890123' },
+  { id: 'PRV008', nit: '900.890.123-4', nombre: 'Laboratorios MediScience', contacto: 'Carolina López', telefono: '601-8901234' },
+  { id: 'PRV009', nit: '800.901.234-5', nombre: 'Distribuciones Salud Total', contacto: 'Andrés Castro', telefono: '605-9012345' },
+  { id: 'PRV010', nit: '900.012.345-6', nombre: 'TecnoMed Importadores', contacto: 'Paola Ramírez', telefono: '601-0123456' },
+  { id: 'PRV011', nit: '800.111.222-3', nombre: 'Corporación Médica del Norte', contacto: 'Felipe Torres', telefono: '605-1112223' },
+  { id: 'PRV012', nit: '900.222.333-4', nombre: 'InsuQuim Farmacéutica', contacto: 'Diana Herrera', telefono: '602-2223334' },
+  { id: 'PRV013', nit: '800.333.444-5', nombre: 'MediGroup Internacional', contacto: 'Ricardo Vargas', telefono: '601-3334445' },
+  { id: 'PRV014', nit: '900.444.555-6', nombre: 'Soluciones Médicas Integrales', contacto: 'Sandra Morales', telefono: '604-4445556' },
+  { id: 'PRV015', nit: '800.555.666-7', nombre: 'Proveeduría Hospitalaria S.A', contacto: 'Miguel Ángel Ruiz', telefono: '601-5556667' },
+]
+
+// Precios históricos de productos (para sugerencias)
+export const preciosHistoricos: Record<string, number> = {
+  'Guantes de látex': 45000,
+  'Jeringa 5ml': 1200,
+  'Alcohol antiséptico': 18500,
+  'Gasa estéril': 12000,
+  'Mascarilla N95': 8500,
+  'Catéter intravenoso': 15000,
+  'Suero fisiológico': 9800,
+  'Vendaje elástico': 7500,
+  'Esparadrapo': 6200,
+  'Termómetro digital': 35000,
+}
+
+// Función para generar cotizaciones mock para una solicitud
+export function generateMockCotizaciones(solicitudId: string, productos: Product[]): import('./types').CotizacionGuardada[] {
+  // Create seed from solicitudId
+  const baseSeed = solicitudId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  
+  const numCotizaciones = Math.floor(seededRandom(baseSeed) * 3) + 2 // 2-4 cotizaciones
+  const cotizaciones: import('./types').CotizacionGuardada[] = []
+  
+  // Deterministic provider selection
+  const proveedorIndices: number[] = []
+  for (let i = 0; i < numCotizaciones; i++) {
+    const idx = Math.floor(seededRandom(baseSeed + i + 500) * catalogoProveedores.length)
+    if (!proveedorIndices.includes(idx)) {
+      proveedorIndices.push(idx)
+    } else {
+      proveedorIndices.push((idx + 1) % catalogoProveedores.length)
+    }
+  }
+  
+  proveedorIndices.forEach((provIdx, index) => {
+    const proveedor = catalogoProveedores[provIdx]
+    const cotSeed = baseSeed + index * 100
+    
+    const fechaCotizacion = new Date('2026-03-01')
+    fechaCotizacion.setDate(fechaCotizacion.getDate() - Math.floor(seededRandom(cotSeed) * 7))
+    
+    const productosCotizados = productos.map((producto, pIdx) => {
+      const pSeed = cotSeed + pIdx * 10
+      const variacionPrecio = 0.8 + seededRandom(pSeed) * 0.4 // -20% a +20%
+      const precioBase = producto.precioEstimado * variacionPrecio
+      const descuento = seededRandom(pSeed + 1) > 0.7 ? Math.floor(seededRandom(pSeed + 2) * 15) : 0
+      const subtotal = precioBase * producto.cantidad * (1 - descuento / 100)
+      
+      return {
+        productoId: producto.id,
+        nombre: producto.nombre,
+        cantidad: producto.cantidad,
+        precioUnitario: Math.round(precioBase),
+        descuento,
+        subtotal: Math.round(subtotal),
+        incluyeIva: seededRandom(pSeed + 3) > 0.5
+      }
+    })
+    
+    const totalSinIva = productosCotizados.reduce((sum, p) => sum + p.subtotal, 0)
+    const totalConIva = productosCotizados.reduce((sum, p) => {
+      return sum + (p.incluyeIva ? p.subtotal : p.subtotal * 1.19)
+    }, 0)
+    
+    const tiposComprobante: ('pdf' | 'image' | 'word' | 'excel')[] = ['pdf', 'image', 'pdf', 'excel']
+    
+    cotizaciones.push({
+      id: `COT-${solicitudId}-${index + 1}`,
+      solicitudId,
+      proveedorId: proveedor.id,
+      proveedorNombre: proveedor.nombre,
+      proveedorNit: proveedor.nit,
+      fechaCotizacion,
+      comprobanteUrl: `/comprobantes/cotizacion-${solicitudId}-${index + 1}.pdf`,
+      comprobanteTipo: tiposComprobante[Math.floor(seededRandom(cotSeed + 50) * 4)],
+      esUltimaCotizacion: index === numCotizaciones - 1,
+      productos: productosCotizados,
+      totalSinIva: Math.round(totalSinIva),
+      totalConIva: Math.round(totalConIva)
+    })
+  })
+  
+  return cotizaciones
+}
+
+// Generar recomendación de compra (selección optimizada por producto)
+export function generateMockRecomendacion(
+  solicitudId: string, 
+  cotizaciones: import('./types').CotizacionGuardada[]
+): import('./types').RecomendacionCompra {
+  const baseSeed = solicitudId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  
+  // Obtener todos los productos únicos
+  const productosUnicos = cotizaciones[0]?.productos || []
+  
+  const selecciones: import('./types').SeleccionProducto[] = productosUnicos.map((producto, pIdx) => {
+    // Encontrar el mejor precio para este producto
+    let mejorCotizacion = cotizaciones[0]
+    let mejorPrecio = Infinity
+    
+    cotizaciones.forEach(cot => {
+      const prod = cot.productos.find(p => p.productoId === producto.productoId)
+      if (prod && prod.subtotal < mejorPrecio) {
+        mejorPrecio = prod.subtotal
+        mejorCotizacion = cot
+      }
+    })
+    
+    const productoSeleccionado = mejorCotizacion.productos.find(p => p.productoId === producto.productoId)!
+    
+    return {
+      productoId: producto.productoId,
+      productoNombre: producto.nombre,
+      cantidad: producto.cantidad,
+      cotizacionId: mejorCotizacion.id,
+      proveedorId: mejorCotizacion.proveedorId,
+      proveedorNombre: mejorCotizacion.proveedorNombre,
+      precioUnitario: productoSeleccionado.precioUnitario,
+      descuento: productoSeleccionado.descuento,
+      subtotal: productoSeleccionado.subtotal,
+      incluyeIva: productoSeleccionado.incluyeIva,
+      esMejorPrecio: true
+    }
+  })
+  
+  const totalGeneral = selecciones.reduce((sum, s) => sum + s.subtotal, 0)
+  
+  const fechaRecomendacion = new Date('2026-03-01')
+  fechaRecomendacion.setDate(fechaRecomendacion.getDate() - Math.floor(seededRandom(baseSeed + 999) * 3))
+  
+  return {
+    solicitudId,
+    fechaRecomendacion,
+    usuarioRecomendador: usuarios[Math.floor(seededRandom(baseSeed + 888) * usuarios.length)],
+    selecciones,
+    totalGeneral,
+    observacionesRecomendador: 'Se recomienda aprobar esta compra. Se seleccionaron los proveedores con mejor precio por cada producto, optimizando el costo total de la solicitud.'
+  }
+}
+
+export { centrosAtencion, dependencias, catalogoProductos, catalogoProveedores, preciosHistoricos, generateMockCotizaciones, generateMockRecomendacion }
