@@ -151,3 +151,23 @@ export interface RecomendacionCompra {
   totalGeneral: number
   observacionesRecomendador: string
 }
+
+// Tipos de pago para órdenes de compra
+export type TipoPago = 'ANTICIPO' | 'CREDITO' | 'CREDIANTICIPO'
+
+export interface CuotaPago {
+  numeroCuota: number
+  porcentaje: number
+  monto: number
+}
+
+export interface OrdenCompra {
+  consecutivo: string
+  solicitudId: string
+  tipoPago: TipoPago
+  numeroCuotas: number
+  cuotas: CuotaPago[]
+  ultimoPagoAlFinalizar: boolean
+  totalOrden: number
+  fechaCreacion: Date
+}

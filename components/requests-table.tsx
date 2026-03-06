@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Package, FileText, ClipboardCheck, BarChart3, ShoppingCart } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Package, FileText, ClipboardCheck, BarChart3, ShoppingCart, FilePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PriorityBadge } from '@/components/priority-badge'
 import { cn } from '@/lib/utils'
@@ -17,6 +17,7 @@ interface RequestsTableProps {
   onReviewRequest: (request: PurchaseRequest) => void
   onCompareQuotations: (request: PurchaseRequest) => void
   onApprovePurchase: (request: PurchaseRequest) => void
+  onCreatePurchaseOrder: (request: PurchaseRequest) => void
 }
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 20, 30, 50]
@@ -68,7 +69,7 @@ function formatCurrency(value: number): string {
   }).format(value)
 }
 
-export function RequestsTable({ requests, onViewProducts, onAddQuotation, onReviewRequest, onCompareQuotations, onApprovePurchase }: RequestsTableProps) {
+export function RequestsTable({ requests, onViewProducts, onAddQuotation, onReviewRequest, onCompareQuotations, onApprovePurchase, onCreatePurchaseOrder }: RequestsTableProps) {
   const [sortField, setSortField] = useState<SortField>('fechaCreacion')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -283,6 +284,19 @@ export function RequestsTable({ requests, onViewProducts, onAddQuotation, onRevi
                           >
                             <ShoppingCart className="h-3.5 w-3.5" />
                             <span className="sr-only sm:not-sr-only sm:inline">Aprobar</span>
+                          </Button>
+                        )}
+                        {(request.estado === 'COMPRA APROBADA' || 
+                          request.estado === 'ORDEN PENDIENTE') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onCreatePurchaseOrder(request)}
+                            className="h-8 gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50"
+                            title="Crear orden de compra"
+                          >
+                            <FilePlus className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:inline">Crear OC</span>
                           </Button>
                         )}
                       </div>

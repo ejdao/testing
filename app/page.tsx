@@ -14,6 +14,7 @@ import { QuotationModal } from '@/components/quotation-modal'
 import { ReviewModal, type ReviewData } from '@/components/review-modal'
 import { QuotationComparisonModal } from '@/components/quotation-comparison-modal'
 import { PurchaseApprovalModal, type PurchaseApprovalData } from '@/components/purchase-approval-modal'
+import { PurchaseOrderModal, type OrdenCompra } from '@/components/purchase-order-modal'
 import { PriorityLegend } from '@/components/priority-badge'
 import { generateMockRequests, stepperData, generateMockProducts, generateMockCotizaciones, generateMockRecomendacion } from '@/lib/mock-data'
 import type { RequestStatus, PurchaseRequest, FilterState, CotizacionGuardada, RecomendacionCompra } from '@/lib/types'
@@ -55,6 +56,8 @@ export default function PurchaseRequestsPage() {
   const [approvalRequest, setApprovalRequest] = useState<PurchaseRequest | null>(null)
   const [approvalCotizaciones, setApprovalCotizaciones] = useState<CotizacionGuardada[]>([])
   const [approvalRecomendacion, setApprovalRecomendacion] = useState<RecomendacionCompra | null>(null)
+  const [purchaseOrderRequest, setPurchaseOrderRequest] = useState<PurchaseRequest | null>(null)
+  const [purchaseOrderRecomendacion, setPurchaseOrderRecomendacion] = useState<RecomendacionCompra | null>(null)
 
   // Generate requests based on active step
   const requests = useMemo(() => {
@@ -166,6 +169,22 @@ export default function PurchaseRequestsPage() {
     setApprovalRequest(null)
     setApprovalCotizaciones([])
     setApprovalRecomendacion(null)
+  }, [])
+
+  const handleCreatePurchaseOrder = useCallback((request: PurchaseRequest) => {
+    // Generar datos mock para la orden de compra
+    const productos = generateMockProducts(request.id)
+    const cotizaciones = generateMockCotizaciones(request.id, productos)
+    const recomendacion = generateMockRecomendacion(request.id, cotizaciones)
+    setPurchaseOrderRecomendacion(recomendacion)
+    setPurchaseOrderRequest(request)
+  }, [])
+
+  const handlePurchaseOrderSubmit = useCallback((data: OrdenCompra) => {
+    console.log('Orden de compra creada:', data)
+    // Aquí iría la lógica para enviar al backend
+    setPurchaseOrderRequest(null)
+    setPurchaseOrderRecomendacion(null)
   }, [])
 
 const handleViewComparisonFromApproval = useCallback(() => {
@@ -305,6 +324,7 @@ const handleViewComparisonFromApproval = useCallback(() => {
           onReviewRequest={setReviewRequest}
           onCompareQuotations={handleCompareQuotations}
           onApprovePurchase={handleApprovePurchase}
+          onCreatePurchaseOrder={handleCreatePurchaseOrder}
         />
       </main>
 
@@ -359,6 +379,17 @@ const handleViewComparisonFromApproval = useCallback(() => {
         }}
         onSubmit={handleApprovalSubmit}
         onViewComparison={handleViewComparisonFromApproval}
+      />
+
+      {/* Purchase Order Modal */}
+      <PurchaseOrderModal
+        request={purchaseOrderRequest}
+        recomendacion={purchaseOrderRecomendacion}
+        onClose={() => {
+          setPurchaseOrderRequest(null)
+          setPurchaseOrderRecomendacion(null)
+        }}
+        onSubmit={handlePurchaseOrderSubmit}
       />
     </div>
   )
