@@ -212,3 +212,28 @@ export interface CancelacionCompra {
   motivoCancelacion: string
   fechaCancelacion: Date
 }
+
+// Contabilización
+export interface DatosContabilizacion {
+  solicitudId: string
+  ordenCompraConsecutivo: string
+  cuotaNumero: number
+  porcentaje: number
+  subtotal: number
+  descuentos: number
+  iva: number
+  total: number
+  fechaSugerida: Date
+  consecutivoCuentaPagar: string
+  codigoComprobanteContable: string
+  retefuentePorcentaje: number
+  retefuenteValor: number
+  reteicaPorcentaje: number
+  reteicaValor: number
+  reteivaPorcentaje: number
+  reteivaaValor: number
+  descuentoAdicional: number
+  totalRetencion: number
+  netoPagar: number
+  observaciones: string
+}

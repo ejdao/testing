@@ -16,6 +16,7 @@ import { QuotationComparisonModal } from '@/components/quotation-comparison-moda
 import { PurchaseApprovalModal, type PurchaseApprovalData } from '@/components/purchase-approval-modal'
 import { PurchaseOrderModal, type OrdenCompra } from '@/components/purchase-order-modal'
 import { PaymentScheduleModal, type ProgramacionPago, type CancelacionCompra } from '@/components/payment-schedule-modal'
+import { AccountingModal, type DatosContabilizacion } from '@/components/accounting-modal'
 import { PriorityLegend } from '@/components/priority-badge'
 import { generateMockRequests, stepperData, generateMockProducts, generateMockCotizaciones, generateMockRecomendacion } from '@/lib/mock-data'
 import type { RequestStatus, PurchaseRequest, FilterState, CotizacionGuardada, RecomendacionCompra, CuotaProgramada } from '@/lib/types'
@@ -62,6 +63,9 @@ export default function PurchaseRequestsPage() {
   const [paymentScheduleRequest, setPaymentScheduleRequest] = useState<PurchaseRequest | null>(null)
   const [paymentScheduleCuotas, setPaymentScheduleCuotas] = useState<CuotaProgramada[]>([])
   const [paymentScheduleOC, setPaymentScheduleOC] = useState('')
+  const [accountingRequest, setAccountingRequest] = useState<PurchaseRequest | null>(null)
+  const [accountingCuota, setAccountingCuota] = useState<CuotaProgramada | null>(null)
+  const [accountingOC, setAccountingOC] = useState('')
 
   // Generate requests based on active step
   const requests = useMemo(() => {
@@ -246,6 +250,31 @@ export default function PurchaseRequestsPage() {
     setPaymentScheduleOC('')
   }, [])
 
+  const handleAccountPayment = useCallback((request: PurchaseRequest) => {
+    // Generar cuota mock para contabilizar
+    const hoy = new Date()
+    const cuota: CuotaProgramada = {
+      numeroCuota: 1,
+      porcentaje: 100,
+      monto: request.totalFacturado,
+      plazoDias: 7,
+      fechaLimite: new Date(hoy.getTime() + 7 * 24 * 60 * 60 * 1000),
+      estado: 'PROGRAMADA',
+      fechaProgramacion: new Date()
+    }
+    setAccountingCuota(cuota)
+    setAccountingOC(`OC-2026-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`)
+    setAccountingRequest(request)
+  }, [])
+
+  const handleAccountingSubmit = useCallback((data: DatosContabilizacion) => {
+    console.log('Contabilización registrada:', data)
+    // Aquí iría la lógica para enviar al backend
+    setAccountingRequest(null)
+    setAccountingCuota(null)
+    setAccountingOC('')
+  }, [])
+
 const handleViewComparisonFromApproval = useCallback(() => {
   if (approvalRequest && approvalCotizaciones.length > 0) {
   setComparisonCotizaciones(approvalCotizaciones)
@@ -385,6 +414,7 @@ const handleViewComparisonFromApproval = useCallback(() => {
           onApprovePurchase={handleApprovePurchase}
           onCreatePurchaseOrder={handleCreatePurchaseOrder}
           onSchedulePayment={handleSchedulePayment}
+          onAccountPayment={handleAccountPayment}
         />
       </main>
 
@@ -464,6 +494,19 @@ const handleViewComparisonFromApproval = useCallback(() => {
         }}
         onSchedulePayment={handlePaymentScheduleSubmit}
         onCancelPurchase={handleCancelPurchase}
+      />
+
+      {/* Accounting Modal */}
+      <AccountingModal
+        request={accountingRequest}
+        ordenCompraConsecutivo={accountingOC}
+        cuota={accountingCuota}
+        onClose={() => {
+          setAccountingRequest(null)
+          setAccountingCuota(null)
+          setAccountingOC('')
+        }}
+        onSubmit={handleAccountingSubmit}
       />
     </div>
   )
