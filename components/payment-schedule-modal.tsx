@@ -165,24 +165,27 @@ export function PaymentScheduleModal({
 
             {/* Lista de cuotas */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Seleccione la cuota a programar</Label>
+              <Label className="text-sm font-medium">Cuota a programar</Label>
               <div className="space-y-2">
-                {cuotas.map((cuota) => {
+                {cuotas.map((cuota, index) => {
                   const dias = diasRestantes(cuota.fechaLimite)
                   const isSelected = selectedCuota?.numeroCuota === cuota.numeroCuota
                   const isPendiente = cuota.estado === 'PENDIENTE'
                   const isVencida = dias < 0 && isPendiente
+                  
+                  // Solo la primera cuota pendiente está habilitada
+                  const primerasPendientesIndex = cuotas.findIndex(c => c.estado === 'PENDIENTE')
+                  const isFirstPendiente = isPendiente && index === primerasPendientesIndex
+                  const isDisabled = !isFirstPendiente
 
                   return (
-                    <button
+                    <div
                       key={cuota.numeroCuota}
-                      onClick={() => isPendiente && setSelectedCuota(cuota)}
-                      disabled={!isPendiente}
                       className={cn(
                         'w-full p-4 rounded-lg border-2 text-left transition-all',
-                        isPendiente && !isSelected && 'border-border hover:border-primary/50 bg-background',
+                        isFirstPendiente && !isSelected && 'border-border bg-background',
                         isSelected && 'border-primary bg-primary/5',
-                        !isPendiente && 'border-border bg-muted/30 cursor-not-allowed opacity-60'
+                        isDisabled && 'border-border bg-muted/30 opacity-60'
                       )}
                     >
                       <div className="flex items-center justify-between">
@@ -246,7 +249,7 @@ export function PaymentScheduleModal({
                           )}
                         </div>
                       </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
