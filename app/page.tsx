@@ -15,9 +15,10 @@ import { ReviewModal, type ReviewData } from '@/components/review-modal'
 import { QuotationComparisonModal } from '@/components/quotation-comparison-modal'
 import { PurchaseApprovalModal, type PurchaseApprovalData } from '@/components/purchase-approval-modal'
 import { PurchaseOrderModal, type OrdenCompra } from '@/components/purchase-order-modal'
+import { PaymentScheduleModal, type ProgramacionPago, type CancelacionCompra } from '@/components/payment-schedule-modal'
 import { PriorityLegend } from '@/components/priority-badge'
 import { generateMockRequests, stepperData, generateMockProducts, generateMockCotizaciones, generateMockRecomendacion } from '@/lib/mock-data'
-import type { RequestStatus, PurchaseRequest, FilterState, CotizacionGuardada, RecomendacionCompra } from '@/lib/types'
+import type { RequestStatus, PurchaseRequest, FilterState, CotizacionGuardada, RecomendacionCompra, CuotaProgramada } from '@/lib/types'
 
 // Helper to format date for input
 const formatDateForInput = (date: Date) => {
@@ -58,6 +59,9 @@ export default function PurchaseRequestsPage() {
   const [approvalRecomendacion, setApprovalRecomendacion] = useState<RecomendacionCompra | null>(null)
   const [purchaseOrderRequest, setPurchaseOrderRequest] = useState<PurchaseRequest | null>(null)
   const [purchaseOrderRecomendacion, setPurchaseOrderRecomendacion] = useState<RecomendacionCompra | null>(null)
+  const [paymentScheduleRequest, setPaymentScheduleRequest] = useState<PurchaseRequest | null>(null)
+  const [paymentScheduleCuotas, setPaymentScheduleCuotas] = useState<CuotaProgramada[]>([])
+  const [paymentScheduleOC, setPaymentScheduleOC] = useState('')
 
   // Generate requests based on active step
   const requests = useMemo(() => {
@@ -185,6 +189,61 @@ export default function PurchaseRequestsPage() {
     // Aquí iría la lógica para enviar al backend
     setPurchaseOrderRequest(null)
     setPurchaseOrderRecomendacion(null)
+  }, [])
+
+  // Generar cuotas mock para programación de pago
+  const generateMockCuotasProgramadas = (totalOrden: number): CuotaProgramada[] => {
+    const hoy = new Date()
+    return [
+      {
+        numeroCuota: 1,
+        porcentaje: 30,
+        monto: totalOrden * 0.3,
+        plazoDias: 15,
+        fechaLimite: new Date(hoy.getTime() + 15 * 24 * 60 * 60 * 1000),
+        estado: 'PENDIENTE'
+      },
+      {
+        numeroCuota: 2,
+        porcentaje: 40,
+        monto: totalOrden * 0.4,
+        plazoDias: 30,
+        fechaLimite: new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000),
+        estado: 'PENDIENTE'
+      },
+      {
+        numeroCuota: 3,
+        porcentaje: 30,
+        monto: totalOrden * 0.3,
+        plazoDias: 45,
+        fechaLimite: new Date(hoy.getTime() + 45 * 24 * 60 * 60 * 1000),
+        estado: 'PENDIENTE'
+      }
+    ]
+  }
+
+  const handleSchedulePayment = useCallback((request: PurchaseRequest) => {
+    // Generar datos mock para las cuotas
+    const cuotas = generateMockCuotasProgramadas(request.totalFacturado)
+    setPaymentScheduleCuotas(cuotas)
+    setPaymentScheduleOC(`OC-2026-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`)
+    setPaymentScheduleRequest(request)
+  }, [])
+
+  const handlePaymentScheduleSubmit = useCallback((data: ProgramacionPago) => {
+    console.log('Pago programado:', data)
+    // Aquí iría la lógica para enviar al backend
+    setPaymentScheduleRequest(null)
+    setPaymentScheduleCuotas([])
+    setPaymentScheduleOC('')
+  }, [])
+
+  const handleCancelPurchase = useCallback((data: CancelacionCompra) => {
+    console.log('Compra cancelada:', data)
+    // Aquí iría la lógica para enviar al backend
+    setPaymentScheduleRequest(null)
+    setPaymentScheduleCuotas([])
+    setPaymentScheduleOC('')
   }, [])
 
 const handleViewComparisonFromApproval = useCallback(() => {
@@ -325,6 +384,7 @@ const handleViewComparisonFromApproval = useCallback(() => {
           onCompareQuotations={handleCompareQuotations}
           onApprovePurchase={handleApprovePurchase}
           onCreatePurchaseOrder={handleCreatePurchaseOrder}
+          onSchedulePayment={handleSchedulePayment}
         />
       </main>
 
@@ -390,6 +450,20 @@ const handleViewComparisonFromApproval = useCallback(() => {
           setPurchaseOrderRecomendacion(null)
         }}
         onSubmit={handlePurchaseOrderSubmit}
+      />
+
+      {/* Payment Schedule Modal */}
+      <PaymentScheduleModal
+        request={paymentScheduleRequest}
+        ordenCompraConsecutivo={paymentScheduleOC}
+        cuotas={paymentScheduleCuotas}
+        onClose={() => {
+          setPaymentScheduleRequest(null)
+          setPaymentScheduleCuotas([])
+          setPaymentScheduleOC('')
+        }}
+        onSchedulePayment={handlePaymentScheduleSubmit}
+        onCancelPurchase={handleCancelPurchase}
       />
     </div>
   )

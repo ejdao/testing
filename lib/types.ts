@@ -184,3 +184,31 @@ export interface CambioEstado {
   usuarioDocumento: string
   observaciones: string
 }
+
+// Programación de pagos
+export interface CuotaProgramada extends CuotaPago {
+  plazoDias: number
+  fechaLimite: Date
+  estado: 'PENDIENTE' | 'PROGRAMADA' | 'PAGADA' | 'CANCELADA'
+  fechaProgramacion?: Date
+  observacionesProgramacion?: string
+}
+
+export interface ProgramacionPago {
+  solicitudId: string
+  ordenCompraConsecutivo: string
+  cuotaNumero: number
+  porcentaje: number
+  monto: number
+  plazoDias: number
+  fechaLimite: Date
+  fechaProgramacion: Date
+  observaciones: string
+}
+
+export interface CancelacionCompra {
+  solicitudId: string
+  ordenCompraConsecutivo: string
+  motivoCancelacion: string
+  fechaCancelacion: Date
+}

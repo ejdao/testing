@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, ClipboardCheck, BarChart3, ShoppingCart, FilePlus } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, ClipboardCheck, BarChart3, ShoppingCart, FilePlus, CalendarClock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PriorityBadge } from '@/components/priority-badge'
 import { cn } from '@/lib/utils'
@@ -18,6 +18,7 @@ interface RequestsTableProps {
   onCompareQuotations: (request: PurchaseRequest) => void
   onApprovePurchase: (request: PurchaseRequest) => void
   onCreatePurchaseOrder: (request: PurchaseRequest) => void
+  onSchedulePayment: (request: PurchaseRequest) => void
 }
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 20, 30, 50]
@@ -69,7 +70,7 @@ function formatCurrency(value: number): string {
   }).format(value)
 }
 
-export function RequestsTable({ requests, onViewProducts, onAddQuotation, onReviewRequest, onCompareQuotations, onApprovePurchase, onCreatePurchaseOrder }: RequestsTableProps) {
+export function RequestsTable({ requests, onViewProducts, onAddQuotation, onReviewRequest, onCompareQuotations, onApprovePurchase, onCreatePurchaseOrder, onSchedulePayment }: RequestsTableProps) {
   const [sortField, setSortField] = useState<SortField>('fechaCreacion')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [currentPage, setCurrentPage] = useState(1)
@@ -297,6 +298,19 @@ export function RequestsTable({ requests, onViewProducts, onAddQuotation, onRevi
                           >
                             <FilePlus className="h-3.5 w-3.5" />
                             <span className="sr-only sm:not-sr-only sm:inline">Crear OC</span>
+                          </Button>
+                        )}
+                        {(request.estado === 'PENDIENTE POR PROGRAMAR OC' || 
+                          request.estado === 'PENDIENTE POR PROGRAMAR') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onSchedulePayment(request)}
+                            className="h-8 gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50"
+                            title="Programar pago"
+                          >
+                            <CalendarClock className="h-3.5 w-3.5" />
+                            <span className="sr-only sm:not-sr-only sm:inline">Programar</span>
                           </Button>
                         )}
                       </div>
