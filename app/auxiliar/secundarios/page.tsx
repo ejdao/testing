@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/compo
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Play, Eye, Truck, CheckCircle } from 'lucide-react';
+import { Play, Eye, Truck, CheckCircle, AlertCircle } from 'lucide-react';
 
 const estadoConfig: Record<string, { label: string; variant: 'default' | 'info' | 'warning' | 'success' | 'danger'; icon: typeof Play }> = {
   asignado: { label: 'Asignado', variant: 'info', icon: Play },
@@ -17,11 +17,15 @@ const estadoConfig: Record<string, { label: string; variant: 'default' | 'info' 
 export default function SecundariosAsignados() {
   const { trasladosSecundarios, actualizarTrasladoSecundario, actualizarAmbulancia, ambulancias } = useTraslados();
 
+  // IMPORTANTE: Solo mostrar traslados secundarios que YA tienen ambulancia asignada
+  // Los traslados pendientes NO deben aparecer aqui - solo la central los asigna
   const secundariosActivos = trasladosSecundarios.filter(t => 
-    t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado'
+    t.ambulanciaAsignada && (t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado')
   );
 
-  const secundariosFinalizados = trasladosSecundarios.filter(t => t.estado === 'finalizado');
+  const secundariosFinalizados = trasladosSecundarios.filter(t => 
+    t.estado === 'finalizado' && t.ambulanciaAsignada
+  );
 
   const handleIniciarTraslado = (trasladoId: string, ambulanciaId?: string) => {
     actualizarTrasladoSecundario(trasladoId, {
@@ -45,7 +49,19 @@ export default function SecundariosAsignados() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Traslados Secundarios Asignados</h1>
-        <p className="text-gray-500">Gestiona los traslados secundarios que te han sido asignados</p>
+        <p className="text-gray-500">Gestiona los traslados secundarios que te han sido asignados por la Central</p>
+      </div>
+
+      {/* Nota informativa */}
+      <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-medium text-blue-800">Nota importante</p>
+          <p className="text-blue-700">
+            Solo aparecen aqui los traslados secundarios que la Central de Despacho te ha asignado. 
+            Los traslados primarios se registran desde "Nuevo Primario".
+          </p>
+        </div>
       </div>
 
       {/* Traslados Activos */}
