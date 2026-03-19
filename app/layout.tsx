@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { TrasladosProvider } from '@/context/TrasladosContext'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Sistema de Gestión de Compras',
-  description: 'Sistema de gestión de solicitudes de compra empresarial',
+  title: 'Sistema de Traslados Asistenciales',
+  description: 'Sistema de gestion de traslados asistenciales en ambulancia - Res. 2284/2023',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -35,9 +36,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
-        {children}
+    <html lang="es">
+      <body className="font-sans antialiased bg-gray-50">
+        <TrasladosProvider>
+          {children}
+        </TrasladosProvider>
         <Analytics />
       </body>
     </html>

@@ -1,361 +1,94 @@
-'use client'
+'use client';
 
-import { useState, useMemo, useCallback } from 'react'
-import { RefreshCw, Calendar, CalendarDays, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { WorkflowStepper } from '@/components/workflow-stepper'
-import { FilterPanel } from '@/components/filter-panel'
-import { RequestsTable } from '@/components/requests-table'
-import { ProductsModal } from '@/components/products-modal'
-import { RequestFormModal } from '@/components/request-form-modal'
-import { QuotationModal } from '@/components/quotation-modal'
-import { ReviewModal, type ReviewData } from '@/components/review-modal'
-import { QuotationComparisonModal } from '@/components/quotation-comparison-modal'
-import { PurchaseApprovalModal, type PurchaseApprovalData } from '@/components/purchase-approval-modal'
-import { PriorityLegend } from '@/components/priority-badge'
-import { generateMockRequests, stepperData, generateMockProducts, generateMockCotizaciones, generateMockRecomendacion } from '@/lib/mock-data'
-import type { RequestStatus, PurchaseRequest, FilterState, CotizacionGuardada, RecomendacionCompra } from '@/lib/types'
+import { useTraslados } from '@/context/TrasladosContext';
+import { useRouter } from 'next/navigation';
+import { Ambulance, Stethoscope, Radio } from 'lucide-react';
+import type { RolUsuario } from '@/types/traslados';
 
-// Helper to format date for input
-const formatDateForInput = (date: Date) => {
-  return date.toISOString().split('T')[0]
-}
-
-export default function PurchaseRequestsPage() {
-  const [activeStep, setActiveStep] = useState<RequestStatus>('REGISTRADOS')
-  const [selectedRequest, setSelectedRequest] = useState<PurchaseRequest | null>(null)
-  const [filters, setFilters] = useState<FilterState>({
-    search: '',
-    centroAtencion: '',
-    prioridad: '',
-    tipoSolicitud: '',
-    fechaDesde: '',
-    fechaHasta: ''
-  })
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  
-  // Date range for query
-  const today = new Date()
-  const thirtyDaysAgo = new Date(today)
-  thirtyDaysAgo.setDate(today.getDate() - 30)
-  
-  const [dateRange, setDateRange] = useState({
-    desde: formatDateForInput(thirtyDaysAgo),
-    hasta: formatDateForInput(today)
-  })
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [showRequestForm, setShowRequestForm] = useState(false)
-  const [quotationRequest, setQuotationRequest] = useState<PurchaseRequest | null>(null)
-  const [reviewRequest, setReviewRequest] = useState<PurchaseRequest | null>(null)
-  const [comparisonRequest, setComparisonRequest] = useState<PurchaseRequest | null>(null)
-  const [comparisonCotizaciones, setComparisonCotizaciones] = useState<CotizacionGuardada[]>([])
-  const [approvalRequest, setApprovalRequest] = useState<PurchaseRequest | null>(null)
-  const [approvalCotizaciones, setApprovalCotizaciones] = useState<CotizacionGuardada[]>([])
-  const [approvalRecomendacion, setApprovalRecomendacion] = useState<RecomendacionCompra | null>(null)
-
-  // Generate requests based on active step
-  const requests = useMemo(() => {
-    return generateMockRequests(activeStep, stepperData[activeStep])
-  }, [activeStep])
-
-  // Filter requests
-  const filteredRequests = useMemo(() => {
-    return requests.filter((request) => {
-      // Search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase()
-        const matchesSearch = 
-          request.codigo.toLowerCase().includes(searchLower) ||
-          request.dependencia.toLowerCase().includes(searchLower) ||
-          request.usuario.toLowerCase().includes(searchLower) ||
-          request.estado.toLowerCase().includes(searchLower)
-        
-        if (!matchesSearch) return false
-      }
-
-      // Centro de atención filter
-      if (filters.centroAtencion && request.centroAtencion !== filters.centroAtencion) {
-        return false
-      }
-
-      // Priority filter
-      if (filters.prioridad && request.prioridad !== filters.prioridad) {
-        return false
-      }
-
-      // Request type filter
-      if (filters.tipoSolicitud && request.tipoSolicitud !== filters.tipoSolicitud) {
-        return false
-      }
-
-      // Date filters
-      if (filters.fechaDesde) {
-        const desde = new Date(filters.fechaDesde)
-        if (request.fechaCreacion < desde) return false
-      }
-
-      if (filters.fechaHasta) {
-        const hasta = new Date(filters.fechaHasta)
-        hasta.setHours(23, 59, 59, 999)
-        if (request.fechaCreacion > hasta) return false
-      }
-
-      return true
-    })
-  }, [requests, filters])
-
-  const handleStepClick = useCallback((step: RequestStatus) => {
-    setActiveStep(step)
-    setFilters({
-      search: '',
-      centroAtencion: '',
-      prioridad: '',
-      tipoSolicitud: '',
-      fechaDesde: '',
-      fechaHasta: ''
-    })
-  }, [])
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    setTimeout(() => setIsRefreshing(false), 1000)
-  }, [])
-
-  const handleCreateRequest = useCallback((data: unknown) => {
-    console.log('Nueva solicitud creada:', data)
-    // Aquí iría la lógica para enviar al backend
-    setShowRequestForm(false)
-  }, [])
-
-  const handleCreateQuotation = useCallback((data: unknown) => {
-    console.log('Nueva cotización creada:', data)
-    // Aquí iría la lógica para enviar al backend
-    setQuotationRequest(null)
-  }, [])
-
-  const handleReviewSubmit = useCallback((data: ReviewData) => {
-    console.log('Revisión enviada:', data)
-    // Aquí iría la lógica para enviar al backend
-    setReviewRequest(null)
-  }, [])
-
-  const handleCompareQuotations = useCallback((request: PurchaseRequest) => {
-    // Generar productos y cotizaciones mock para la comparación
-    const productos = generateMockProducts(request.id)
-    const cotizaciones = generateMockCotizaciones(request.id, productos)
-    setComparisonCotizaciones(cotizaciones)
-    setComparisonRequest(request)
-  }, [])
-
-  const handleApprovePurchase = useCallback((request: PurchaseRequest) => {
-    // Generar datos mock para la aprobación
-    const productos = generateMockProducts(request.id)
-    const cotizaciones = generateMockCotizaciones(request.id, productos)
-    const recomendacion = generateMockRecomendacion(request.id, cotizaciones)
-    setApprovalCotizaciones(cotizaciones)
-    setApprovalRecomendacion(recomendacion)
-    setApprovalRequest(request)
-  }, [])
-
-  const handleApprovalSubmit = useCallback((data: PurchaseApprovalData) => {
-    console.log('Aprobación/Rechazo enviado:', data)
-    // Aquí iría la lógica para enviar al backend
-    setApprovalRequest(null)
-    setApprovalCotizaciones([])
-    setApprovalRecomendacion(null)
-  }, [])
-
-  const handleViewComparisonFromApproval = useCallback(() => {
-    if (approvalRequest && approvalCotizaciones.length > 0) {
-      setComparisonCotizaciones(approvalCotizaciones)
-      setComparisonRequest(approvalRequest)
-    }
-  }, [approvalRequest, approvalCotizaciones])
-
-  const formatDisplayDate = (dateStr: string) => {
-    const date = new Date(dateStr + 'T00:00:00')
-    return date.toLocaleDateString('es-CO', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
-    }).toUpperCase()
+const roles = [
+  {
+    id: 'auxiliar' as RolUsuario,
+    nombre: 'Auxiliar de Enfermeria',
+    descripcion: 'Registra traslados primarios, completa traslados secundarios asignados y reporta incidentes',
+    icon: Ambulance,
+    color: 'bg-blue-600 hover:bg-blue-700',
+    href: '/auxiliar'
+  },
+  {
+    id: 'medico' as RolUsuario,
+    nombre: 'Medico',
+    descripcion: 'Solicita traslados secundarios para pacientes que requieren referencia entre IPS',
+    icon: Stethoscope,
+    color: 'bg-green-600 hover:bg-green-700',
+    href: '/medico'
+  },
+  {
+    id: 'central' as RolUsuario,
+    nombre: 'Central de Despacho',
+    descripcion: 'Visualiza todos los traslados, asigna ambulancias y gestiona incidentes reportados',
+    icon: Radio,
+    color: 'bg-orange-600 hover:bg-orange-700',
+    href: '/central'
   }
+];
+
+export default function HomePage() {
+  const { setRolActual } = useTraslados();
+  const router = useRouter();
+
+  const handleSelectRole = (rol: RolUsuario, href: string) => {
+    setRolActual(rol);
+    router.push(href);
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-card border-b border-border shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between py-4 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-foreground">
-                    Solicitudes de Compra
-                  </h1>
-                  <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
-                    <PopoverTrigger asChild>
-                      <button className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer">
-                        <CalendarDays className="h-3.5 w-3.5" />
-                        {formatDisplayDate(dateRange.desde)} - {formatDisplayDate(dateRange.hasta)}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-4" align="start">
-                      <div className="space-y-4">
-                        <div className="text-sm font-medium text-foreground">Rango de consulta</div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1.5">
-                            <label className="text-xs text-muted-foreground">Desde</label>
-                            <Input
-                              type="date"
-                              value={dateRange.desde}
-                              onChange={(e) => setDateRange(prev => ({ ...prev, desde: e.target.value }))}
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs text-muted-foreground">Hasta</label>
-                            <Input
-                              type="date"
-                              value={dateRange.hasta}
-                              onChange={(e) => setDateRange(prev => ({ ...prev, hasta: e.target.value }))}
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setShowDatePicker(false)}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            onClick={() => {
-                              setShowDatePicker(false)
-                              handleRefresh()
-                            }}
-                          >
-                            Aplicar
-                          </Button>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="ml-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span className="sr-only">Actualizar</span>
-              </Button>
-
-              <Button 
-                onClick={() => setShowRequestForm(true)}
-                className="gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nueva Solicitud
-              </Button>
-            </div>
-
-            <PriorityLegend />
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-4xl w-full">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Ambulance className="w-12 h-12 text-blue-600" />
           </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Sistema de Traslados Asistenciales
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Gestion de traslados primarios y secundarios en ambulancia terrestre
+            conforme a la Resolucion 2284/2023 y Resolucion 3100/2019
+          </p>
         </div>
-      </header>
 
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Workflow Stepper */}
-        <section className="bg-card rounded-xl border border-border p-4 shadow-sm">
-          <WorkflowStepper 
-            activeStep={activeStep}
-            onStepClick={handleStepClick}
-            stepCounts={stepperData}
-          />
-        </section>
+        {/* Role Selection */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {roles.map((rol) => {
+            const Icon = rol.icon;
+            return (
+              <button
+                key={rol.id}
+                onClick={() => handleSelectRole(rol.id, rol.href)}
+                className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all group"
+              >
+                <div className={`p-4 rounded-full ${rol.color} text-white mb-4 transition-transform group-hover:scale-110`}>
+                  <Icon className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  {rol.nombre}
+                </h2>
+                <p className="text-sm text-gray-500 text-center">
+                  {rol.descripcion}
+                </p>
+              </button>
+            );
+          })}
+        </div>
 
-        {/* Filters */}
-        <FilterPanel
-          filters={filters}
-          onFiltersChange={setFilters}
-          totalItems={requests.length}
-          filteredItems={filteredRequests.length}
-        />
-
-        {/* Table */}
-        <RequestsTable 
-          requests={filteredRequests}
-          onViewProducts={setSelectedRequest}
-          onAddQuotation={setQuotationRequest}
-          onReviewRequest={setReviewRequest}
-          onCompareQuotations={handleCompareQuotations}
-          onApprovePurchase={handleApprovePurchase}
-        />
-      </main>
-
-      {/* Products Modal */}
-      <ProductsModal 
-        request={selectedRequest}
-        onClose={() => setSelectedRequest(null)}
-      />
-
-      {/* Request Form Modal */}
-      <RequestFormModal
-        isOpen={showRequestForm}
-        onClose={() => setShowRequestForm(false)}
-        onSubmit={handleCreateRequest}
-      />
-
-      {/* Quotation Modal */}
-      <QuotationModal
-        request={quotationRequest}
-        onClose={() => setQuotationRequest(null)}
-        onSubmit={handleCreateQuotation}
-      />
-
-      {/* Review Modal */}
-      <ReviewModal
-        request={reviewRequest}
-        onClose={() => setReviewRequest(null)}
-        onSubmit={handleReviewSubmit}
-      />
-
-      {/* Quotation Comparison Modal */}
-      <QuotationComparisonModal
-        request={comparisonRequest}
-        cotizaciones={comparisonCotizaciones}
-        onClose={() => {
-          setComparisonRequest(null)
-          setComparisonCotizaciones([])
-        }}
-      />
-
-      {/* Purchase Approval Modal */}
-      <PurchaseApprovalModal
-        request={approvalRequest}
-        cotizaciones={approvalCotizaciones}
-        recomendacion={approvalRecomendacion}
-        onClose={() => {
-          setApprovalRequest(null)
-          setApprovalCotizaciones([])
-          setApprovalRecomendacion(null)
-        }}
-        onSubmit={handleApprovalSubmit}
-        onViewComparison={handleViewComparisonFromApproval}
-      />
-    </div>
-  )
+        {/* Footer */}
+        <div className="mt-12 text-center">
+          <p className="text-xs text-gray-400">
+            REF-FT-04A / REF-FT-04B - Formato de Traslado Asistencial
+          </p>
+        </div>
+      </div>
+    </main>
+  );
 }
