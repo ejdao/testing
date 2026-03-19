@@ -22,8 +22,9 @@ export default function AuxiliarDashboard() {
   const { trasladosPrimarios, trasladosSecundarios } = useTraslados();
 
   const primariosPendientes = trasladosPrimarios.filter(t => t.estado !== 'finalizado' && t.estado !== 'cancelado');
+  // Solo mostrar secundarios que YA tienen ambulancia asignada por la central
   const secundariosAsignados = trasladosSecundarios.filter(t => 
-    t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado'
+    t.ambulanciaAsignada && (t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado')
   );
 
   const trasladosRecientes = [...trasladosPrimarios, ...trasladosSecundarios]

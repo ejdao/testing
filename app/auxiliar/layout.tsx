@@ -22,8 +22,9 @@ export default function AuxiliarLayout({
   const { obtenerIncidentesPendientes, trasladosSecundarios } = useTraslados();
   
   const incidentesPendientes = obtenerIncidentesPendientes().length;
+  // Solo contar secundarios que YA tienen ambulancia asignada por la central
   const secundariosAsignados = trasladosSecundarios.filter(t => 
-    t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado'
+    t.ambulanciaAsignada && (t.estado === 'asignado' || t.estado === 'en_ruta' || t.estado === 'en_traslado')
   ).length;
 
   return (
